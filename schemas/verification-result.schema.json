@@ -9,6 +9,7 @@
     "accepted": {"type": "boolean"},
     "reason_codes": {
       "type": "array",
+      "minItems": 1,
       "uniqueItems": true,
       "items": {
         "enum": [
@@ -29,5 +30,21 @@
       }
     },
     "explanation": {"type": "string", "minLength": 1}
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"accepted": {"const": true}},
+        "required": ["accepted"]
+      },
+      "then": {"properties": {"reason_codes": {"const": ["accepted"]}}},
+      "else": {
+        "properties": {
+          "reason_codes": {
+            "not": {"contains": {"const": "accepted"}}
+          }
+        }
+      }
+    }
+  ]
 }

@@ -99,6 +99,35 @@ class RankingAuditTests(unittest.TestCase):
         audit = audit_frames(rows)[0]
         self.assertIn("mixed_source_amount_types", audit.errors)
 
+    def test_pilot_historical_year_rejects_wrong_frozen_amount_type(self) -> None:
+        rows = [
+            replace(
+                row(rank),
+                cohort_year=1959,
+                first_domestic_release_date="1959-01-01",
+                source_regime="variety_rental",
+                metric="distributor_rental",
+                source_amount_type="projected_ultimate",
+            )
+            for rank in range(1, 36)
+        ]
+        audit = audit_frames(rows)[0]
+        self.assertIn("pilot_requires_cumulative_to_date", audit.errors)
+
+    def test_1952_backup_uses_frozen_projection_type(self) -> None:
+        rows = [
+            replace(
+                row(rank),
+                cohort_year=1952,
+                first_domestic_release_date="1952-01-01",
+                source_regime="variety_rental",
+                metric="distributor_rental",
+                source_amount_type="projected_ultimate",
+            )
+            for rank in range(1, 36)
+        ]
+        self.assertTrue(audit_frames(rows)[0].complete)
+
     def test_strict_boolean_and_hash_pairing(self) -> None:
         with self.assertRaisesRegex(ValueError, "both be set or empty"):
             replace(row(1), artifact_path="restricted/page.html")
@@ -124,6 +153,22 @@ class RankingAuditTests(unittest.TestCase):
 
 
 class TitleResolutionTests(unittest.TestCase):
+    def test_unconstructible_slot_is_audited_skip_not_a_required_frame(self) -> None:
+        active = PilotSlot(1976, 1988, "development", 1982, 13, (13, 19))
+        failed = PilotSlot(
+            1950,
+            1962,
+            "backup_1",
+            1960,
+            13,
+            (13, 19),
+            frame_status="unconstructible",
+            status_reason="missing_comparable_amount",
+        )
+        resolved = resolve_pilot_titles([row(rank) for rank in range(1, 36)], [active, failed])
+        self.assertEqual(len(resolved), 1)
+        self.assertEqual(resolved[0].slot.release_year, 1982)
+
     def test_uses_frozen_rank_order_without_compressing_frame(self) -> None:
         rows = [row(rank) for rank in range(1, 36)]
         rows[12] = row(13, eligibility="ineligible")

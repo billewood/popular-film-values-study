@@ -17,6 +17,7 @@ PILOT_PERIODS: tuple[tuple[int, int], ...] = (
     (2002, 2014),
     (2015, 2025),
 )
+SLOT_FRAME_STATUSES = frozenset({"required", "unconstructible"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -58,6 +59,16 @@ class PilotSlot:
     release_year: int
     selected_rank: int
     rank_replacement_order: tuple[int, ...]
+    frame_status: str = "required"
+    status_reason: str = ""
+
+    def __post_init__(self) -> None:
+        if self.frame_status not in SLOT_FRAME_STATUSES:
+            raise ValueError(f"Unknown slot frame_status: {self.frame_status}")
+        if self.frame_status == "required" and self.status_reason.strip():
+            raise ValueError("required slots may not have a status_reason")
+        if self.frame_status == "unconstructible" and not self.status_reason.strip():
+            raise ValueError("unconstructible slots require a status_reason")
 
 
 def period_for_year(year: int) -> tuple[int, int]:
@@ -246,6 +257,8 @@ def read_slots_csv(path: str | Path) -> list[PilotSlot]:
             "release_year",
             "selected_rank",
             "rank_replacement_order",
+            "frame_status",
+            "status_reason",
         }
         missing = required - set(rows.fieldnames or ())
         if missing:
@@ -278,6 +291,8 @@ def read_slots_csv(path: str | Path) -> list[PilotSlot]:
                     release_year=release_year,
                     selected_rank=selected_rank,
                     rank_replacement_order=replacement_order,
+                    frame_status=row["frame_status"],
+                    status_reason=row["status_reason"],
                 )
             )
         return slots
@@ -328,6 +343,8 @@ def write_slots_csv(path: str | Path, slots: Sequence[PilotSlot]) -> None:
         "release_year",
         "selected_rank",
         "rank_replacement_order",
+        "frame_status",
+        "status_reason",
     )
     with Path(path).open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=fields, lineterminator="\n")
@@ -343,5 +360,7 @@ def write_slots_csv(path: str | Path, slots: Sequence[PilotSlot]) -> None:
                     "rank_replacement_order": ";".join(
                         str(rank) for rank in slot.rank_replacement_order
                     ),
+                    "frame_status": slot.frame_status,
+                    "status_reason": slot.status_reason,
                 }
             )

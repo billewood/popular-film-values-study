@@ -85,6 +85,22 @@ class EndingResponse(str, Enum):
     AMBIGUOUS = "ambiguous"
 
 
+class VerificationReason(str, Enum):
+    ACCEPTED = "accepted"
+    THEME_UNSUPPORTED = "theme_unsupported"
+    CLAIM_TARGET_INCORRECT = "claim_target_incorrect"
+    CLAIM_TYPE_INCORRECT = "claim_type_incorrect"
+    SEGMENT_INFERRED = "segment_inferred"
+    SALIENCE_OVERSTATED = "salience_overstated"
+    STANCE_UNSUPPORTED = "stance_unsupported"
+    CRITIC_PREFERENCE_MISCLASSIFIED = "critic_preference_misclassified"
+    ENDING_RESPONSE_UNSUPPORTED = "ending_response_unsupported"
+    SELFISHNESS_GUARDRAIL_FAILED = "selfishness_guardrail_failed"
+    CONSUMERISM_GUARDRAIL_FAILED = "consumerism_guardrail_failed"
+    INSUFFICIENT_CONTEXT = "insufficient_context"
+    OTHER = "other"
+
+
 @dataclass(frozen=True, slots=True)
 class EvidenceRecord:
     """One evidence-constrained claim extracted from one source."""
@@ -120,3 +136,24 @@ class EvidenceRecord:
             and self.narrative_segment is not NarrativeSegment.ENDING
         ):
             raise ValueError("ending_response is permitted only for ending evidence")
+
+
+@dataclass(frozen=True, slots=True)
+class EvidenceVerificationResult:
+    """One strict verification decision for a proposed evidence record."""
+
+    accepted: bool
+    reason_codes: tuple[VerificationReason, ...]
+    explanation: str
+
+    def __post_init__(self) -> None:
+        if not self.explanation.strip():
+            raise ValueError("verification explanation may not be empty")
+        if not self.reason_codes:
+            raise ValueError("verification requires at least one reason code")
+        if len(self.reason_codes) != len(set(self.reason_codes)):
+            raise ValueError("verification reason codes must be unique")
+        if self.accepted and self.reason_codes != (VerificationReason.ACCEPTED,):
+            raise ValueError("accepted verification requires only the accepted reason code")
+        if not self.accepted and VerificationReason.ACCEPTED in self.reason_codes:
+            raise ValueError("rejected verification may not contain the accepted reason code")

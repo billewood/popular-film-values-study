@@ -8,6 +8,7 @@ from typing import Any, Mapping
 from .models import (
     ClaimTarget,
     ClaimType,
+    EvidenceVerificationResult,
     EndingResponse,
     EvidenceRecord,
     NarrativeSegment,
@@ -15,6 +16,7 @@ from .models import (
     SourceStance,
     SourceType,
     Theme,
+    VerificationReason,
 )
 
 
@@ -90,3 +92,41 @@ def evidence_record_to_dict(record: EvidenceRecord) -> dict[str, Any]:
         if hasattr(value, "value"):
             output[key] = value.value
     return output
+
+
+_VERIFICATION_FIELDS = {"accepted", "reason_codes", "explanation"}
+
+
+def verification_result_from_dict(value: Mapping[str, Any]) -> EvidenceVerificationResult:
+    """Parse a verifier response and enforce accepted/rejected consistency."""
+
+    keys = set(value)
+    missing = _VERIFICATION_FIELDS - keys
+    extra = keys - _VERIFICATION_FIELDS
+    if missing or extra:
+        raise ValueError(
+            f"Verification fields differ from schema; missing={sorted(missing)}, "
+            f"extra={sorted(extra)}"
+        )
+    if not isinstance(value["accepted"], bool):
+        raise ValueError("accepted must be a boolean")
+    if not isinstance(value["explanation"], str):
+        raise ValueError("explanation must be a string")
+    codes = value["reason_codes"]
+    if not isinstance(codes, list) or any(not isinstance(item, str) for item in codes):
+        raise ValueError("reason_codes must be an array of strings")
+    return EvidenceVerificationResult(
+        accepted=value["accepted"],
+        reason_codes=tuple(VerificationReason(item) for item in codes),
+        explanation=value["explanation"],
+    )
+
+
+def verification_result_to_dict(result: EvidenceVerificationResult) -> dict[str, Any]:
+    """Return the schema-compatible representation of a verification decision."""
+
+    return {
+        "accepted": result.accepted,
+        "reason_codes": [reason.value for reason in result.reason_codes],
+        "explanation": result.explanation,
+    }

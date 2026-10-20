@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import unittest
+from pathlib import Path
 
 from film_values.sampling import (
     FilmCandidate,
     PILOT_PERIODS,
     draw_pilot,
     draw_pilot_slots,
+    read_slots_csv,
 )
 
 
@@ -29,6 +31,12 @@ def candidates() -> list[FilmCandidate]:
 
 
 class SamplingTests(unittest.TestCase):
+    def test_committed_slots_record_unconstructible_frame(self) -> None:
+        slots = read_slots_csv(Path(__file__).resolve().parents[1] / "data" / "pilot_slots.csv")
+        failed = [slot for slot in slots if slot.frame_status == "unconstructible"]
+        self.assertEqual([(slot.release_year, slot.assignment) for slot in failed], [(1960, "backup_1")])
+        self.assertTrue(failed[0].status_reason)
+
     def test_public_seed_second_backup_is_stable(self) -> None:
         slots = draw_pilot_slots(
             seed="44dfaae218b8f9f195f633840f16099f047d4398",

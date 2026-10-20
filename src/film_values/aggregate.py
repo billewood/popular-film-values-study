@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Iterable
 
 from .models import (
+    ClaimTarget,
     ClaimType,
     EndingResponse,
     EvidenceRecord,
@@ -19,7 +20,9 @@ from .models import (
 )
 
 
-_STANCE_ELIGIBLE_CLAIMS = {
+_CENTRALITY_ELIGIBLE_CLAIMS = {
+    ClaimType.PLOT_FACT,
+    ClaimType.FILM_THEME_ATTRIBUTION,
     ClaimType.FILM_STANCE_ATTRIBUTION,
     ClaimType.PLOT_CONSEQUENCE,
 }
@@ -95,6 +98,31 @@ def _combine_stances(stances: Iterable[SourceStance]) -> SourceStance:
     return next(iter(observed))
 
 
+def _contributes_to_film_theme(record: EvidenceRecord) -> bool:
+    """Return whether a claim is evidence about the sampled film's thematic content."""
+
+    if record.claim_type not in _CENTRALITY_ELIGIBLE_CLAIMS:
+        return False
+    if record.claim_type in {
+        ClaimType.FILM_THEME_ATTRIBUTION,
+        ClaimType.FILM_STANCE_ATTRIBUTION,
+    }:
+        return record.claim_target is ClaimTarget.FILM
+    return record.claim_target in {ClaimTarget.FILM, ClaimTarget.CHARACTER}
+
+
+def _contributes_to_film_stance(record: EvidenceRecord) -> bool:
+    """Apply the film-attribution rule and bar synopsis-slot stance votes."""
+
+    if record.source_type is SourceType.REFERENCE_SYNOPSIS:
+        return False
+    if record.claim_type is ClaimType.FILM_STANCE_ATTRIBUTION:
+        return record.claim_target is ClaimTarget.FILM
+    if record.claim_type is ClaimType.PLOT_CONSEQUENCE:
+        return record.claim_target in {ClaimTarget.FILM, ClaimTarget.CHARACTER}
+    return False
+
+
 def collapse_source_records(records: Iterable[EvidenceRecord]) -> list[SourceVote]:
     """Collapse passages to one vote per source, theme, and segment."""
 
@@ -116,10 +144,16 @@ def collapse_source_records(records: Iterable[EvidenceRecord]) -> list[SourceVot
         if any(record.source_type is not first.source_type for record in group):
             raise ValueError("One source_id may not refer to multiple source types")
 
+        scoreable = [record for record in group if _contributes_to_film_theme(record)]
+        if not scoreable:
+            # Critic preference and reception claims are retained as evidence
+            # records for audit, but they are outside the film-theme estimand.
+            continue
+
         eligible_stances = (
             record.source_stance
-            for record in group
-            if record.claim_type in _STANCE_ELIGIBLE_CLAIMS
+            for record in scoreable
+            if _contributes_to_film_stance(record)
         )
         votes.append(
             SourceVote(
@@ -129,14 +163,14 @@ def collapse_source_records(records: Iterable[EvidenceRecord]) -> list[SourceVot
                 source_type=first.source_type,
                 theme=first.theme,
                 narrative_segment=first.narrative_segment,
-                salience=max(record.source_salience for record in group),
+                salience=max(record.source_salience for record in scoreable),
                 stance=_combine_stances(eligible_stances),
                 ending_responses=frozenset(
                     record.ending_response
-                    for record in group
+                    for record in scoreable
                     if record.ending_response is not None
                 ),
-                evidence_count=len(group),
+                evidence_count=len(scoreable),
             )
         )
     return votes

@@ -60,18 +60,18 @@ The public draw's `selected_rank` refers to `cohort_rank`. If that row is not an
 
 The public seed fixed metadata-only year/rank slots before titles or themes were inspected. The immediately required frames are:
 
-| Period | Development | Validation | Presampled backup |
-|---|---:|---:|---:|
-| 1950–1962 | 1959, rank 23 | 1962, rank 14 | 1960, rank 13 |
-| 1963–1975 | 1968, rank 20 | 1966, rank 21 | 1965, rank 19 |
-| 1976–1988 | 1983, rank 16 | 1988, rank 24 | 1982, rank 19 |
-| 1989–2001 | 1992, rank 23 | 1998, rank 21 | 1999, rank 13 |
-| 2002–2014 | 2009, rank 13 | 2011, rank 18 | 2005, rank 16 |
-| 2015–2025 | 2021, rank 17 | 2024, rank 22 | 2018, rank 13 |
+| Period | Development | Validation | Presampled backup | Additional metadata backup |
+|---|---:|---:|---:|---:|
+| 1950–1962 | 1959, rank 23 | 1962, rank 14 | 1960, rank 13 (unconstructible) | 1952, rank 12 |
+| 1963–1975 | 1968, rank 20 | 1966, rank 21 | 1965, rank 19 | — |
+| 1976–1988 | 1983, rank 16 | 1988, rank 24 | 1982, rank 19 | — |
+| 1989–2001 | 1992, rank 23 | 1998, rank 21 | 1999, rank 13 | — |
+| 2002–2014 | 2009, rank 13 | 2011, rank 18 | 2005, rank 16 | — |
+| 2015–2025 | 2021, rank 17 | 2024, rank 22 | 2018, rank 13 | — |
 
-For each of these 18 years, construct and freeze the entire cohort through at least rank 35; do not retrieve only the selected row. Resolve development and validation slots in the exact `rank_replacement_order` recorded in [`data/pilot_slots.csv`](../data/pilot_slots.csv). Advance within that order only when a ranked work fails the already-frozen narrative-feature eligibility rule. An otherwise eligible film that fails the separately frozen minimum interpretive-source coverage rule moves the period to its presampled backup-year slot; box-office source inconvenience is not itself a reason to change films. Every skip receives the predefined exclusion/failure code before the next title is opened.
+The draw now contains 19 recorded slots: 18 required frames and the retained, failed 1960 frame. For every required year, construct and freeze the entire cohort through at least rank 35; do not retrieve only the selected row. Resolve development and validation slots in the exact `rank_replacement_order` recorded in [`data/pilot_slots.csv`](../data/pilot_slots.csv). Advance within that order only when a ranked work fails the already-frozen narrative-feature eligibility rule. An otherwise eligible film that fails the separately frozen minimum interpretive-source coverage rule moves the period to its usable presampled backup-year slot; box-office source inconvenience is not itself a reason to change films. Every skip receives the predefined exclusion/failure code before the next title is opened.
 
-All 18 frames, their source artifacts, and the title-resolution log should be frozen before any selected film's interpretive-source search begins. This prevents availability or thematic knowledge learned in an early search from influencing a later rank or historical transcription.
+All 18 required frames, the failed-frame record, all lawfully retainable source artifacts or response hashes, and the title-resolution log must be frozen before any selected film's interpretive-source search begins. This prevents availability or thematic knowledge learned in an early search from influencing a later rank or historical transcription.
 
 ## Regime A: 1950–1981
 
@@ -96,7 +96,9 @@ For each release year *y* from 1950 through 1981:
 1. Obtain and archive the *Variety* annual table published just after reporting year *y* and the table published just after *y*+1. Transcribe the issue-specific method note. Consult *y*+2 only if a title is explicitly deferred or its first complete first-run estimate is still absent.
 2. Double-enter all potentially relevant rows from the page images, including title, displayed amount, source order, release month/year, distributor, estimated/anticipated notation, and reissue notation. OCR may assist discovery but cannot be the final transcription authority.
 3. Verify first domestic commercial release year. Retain only films assigned to *y*.
-4. Classify each amount from its table note as projected ultimate, cumulative-to-date, or reporting-year rental. Do not mix amount types within a release-year cohort. For the six historical **pilot** cohorts—1959, 1960, 1962, 1965, 1966, and 1968—retain the latest cumulative rentals-to-date figure available through **January 31 of *y*+2**. The page images provide a populated current/to-date amount for every potentially rank-relevant row in these frames. A later cumulative figure supersedes an earlier one; a figure explicitly limited to one reporting year is not cumulative and cannot be substituted. If a title does not reappear, retain its latest available cumulative figure and flag `no_later_update`. Do not add figures unless the source explicitly defines them as incremental components. Never incorporate a later rerelease.
+4. Classify each amount from its table note as projected ultimate, cumulative-to-date, or reporting-year rental. Do not mix amount types within a release-year cohort. For the original historical **pilot** cohorts—1959, 1960, 1962, 1965, 1966, and 1968—the frozen target is the latest cumulative rentals-to-date figure available through **January 31 of *y*+2**. A later cumulative figure supersedes an earlier one; a figure explicitly limited to one reporting year is not cumulative and cannot be substituted. If a title does not reappear, retain its latest available cumulative figure and flag `no_later_update`. Do not add figures unless the source explicitly defines them as incremental components. Never incorporate a later rerelease.
+
+   The 1960 backup is explicitly `unconstructible`: *Spartacus* lacks a comparable cumulative U.S.–Canada rental by the cutoff, and neither a worldwide theater gross nor a January 1963 rental may be substituted. The public-seed replacement, 1952, is governed by a cohort-specific `projected_ultimate` rule because its contemporaneous tables do not provide a rowwise cumulative series. Use the latest like-for-like U.S.–Canada final-rental estimate available through January 31, 1954 across the 1952 and 1953 annual tables, including deferred late-1952 releases; the frame remains unresolved unless every potentially top-35 title has a comparable estimate. The validator enforces these pilot-year amount types.
 
    This pilot rule is not silently generalized to the future full 1950–1981 frame. The 1950 table, for example, supplies projected ultimate rentals rather than a rowwise cumulative series, while the 1967 reporting-year table abandons the anticipated-revenue column. Before main-sample identities are resolved, the full page-level audit must freeze an amount-type map for every historical cohort, with one type per cohort and explicit measurement-break sensitivity analyses. A cohort that cannot be ranked without mixing incomparable amount types remains unresolved.
 5. Exclude explicit rereleases, deduplicate title/run records, and rank descending by the retained amount. Preserve non-narrative and otherwise content-ineligible original releases in `cohort_rank`; apply content eligibility only after that rank is fixed. Where only a printed ordering is available, preserve that ordering and mark the amount unavailable.
@@ -147,7 +149,7 @@ Compare the primary and audit source through raw rank 35, normalized by stable t
 
 ## Reproducible freeze rule
 
-The metadata-only pilot draw has already been executed from a public seed without titles. Complete and freeze all 18 selected and backup-year frames **before** any review, synopsis, or theme material is retrieved. Complete the remaining 1950–2025 frames before resolving the future main-sample titles. The freeze package must contain:
+The metadata-only pilot draw has already been executed from a public seed without titles. Complete and freeze all 18 required selected and backup-year frames, plus the structured failure record for 1960, **before** any review, synopsis, or theme material is retrieved. Complete the remaining 1950–2025 frames before resolving the future main-sample titles. The freeze package must contain:
 
 * protocol version and freeze date;
 * every raw source row needed to recover ranks through at least 35;
@@ -191,4 +193,4 @@ If the historical *Variety* tables cannot be lawfully obtained and verified, do 
 
 At minimum, the frozen ranking file should contain:
 
-`cohort_year`, `title`, `stable_title_id`, `first_domestic_release_date`, `release_date_source`, `source_regime`, `primary_source_citation`, `source_table_year`, `source_amount_type`, `metric`, `territory_definition`, `amount`, `amount_estimated`, `source_row_order`, `cohort_rank`, `eligible_rank`, `reissue_flag`, `eligibility`, `exclusion_reason`, `tie_flag`, `near_tie_flag`, `secondary_source_citation`, `secondary_rank`, `secondary_amount`, `conflict_code`, `adjudication_note`, `retrieved_at_utc`, `artifact_path`, and `artifact_sha256`.
+`cohort_year`, `title`, `stable_title_id`, `first_domestic_release_date`, `release_date_precision`, `release_date_source`, `source_regime`, `primary_source_citation`, `primary_source_url`, `source_table_year`, `source_amount_type`, `metric`, `territory_definition`, `amount`, `amount_estimated`, `source_row_order`, `cohort_rank`, `eligible_rank`, `reissue_flag`, `eligibility`, `exclusion_reason`, `tie_flag`, `near_tie_flag`, `secondary_source_citation`, `secondary_source_url`, `secondary_rank`, `secondary_amount`, `conflict_code`, `adjudication_note`, `retrieved_at_utc`, `artifact_path`, and `artifact_sha256`.

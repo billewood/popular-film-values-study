@@ -59,6 +59,15 @@ AMOUNT_TYPES_BY_REGIME = {
     "variety_rental": frozenset({"projected_ultimate", "cumulative_to_date"}),
     "bom_total_gross": frozenset({"release_run_total"}),
 }
+PILOT_HISTORICAL_AMOUNT_TYPE = {
+    1952: "projected_ultimate",
+    1959: "cumulative_to_date",
+    1960: "cumulative_to_date",
+    1962: "cumulative_to_date",
+    1965: "cumulative_to_date",
+    1966: "cumulative_to_date",
+    1968: "cumulative_to_date",
+}
 DATE_PRECISIONS = frozenset({"day", "month", "year", "inferred", "unresolved"})
 _SHA256 = re.compile(r"^[a-f0-9]{64}$")
 
@@ -362,6 +371,13 @@ def audit_frames(
             errors.append("duplicate_source_table_position")
         if len({row.source_amount_type for row in frame}) != 1:
             errors.append("mixed_source_amount_types")
+        expected_pilot_amount_type = PILOT_HISTORICAL_AMOUNT_TYPE.get(year)
+        if expected_pilot_amount_type is not None and any(
+            row.source_amount_type != expected_pilot_amount_type for row in frame
+        ):
+            errors.append(
+                f"pilot_requires_{expected_pilot_amount_type}"
+            )
         eligible_ranks = sorted(
             row.eligible_rank for row in frame if row.eligible_rank is not None
         )
@@ -374,7 +390,8 @@ def audit_frames(
 def resolve_pilot_titles(
     rows: Sequence[RankingRow], slots: Sequence[PilotSlot]
 ) -> list[ResolvedPilotTitle]:
-    required_years = {slot.release_year for slot in slots}
+    active_slots = [slot for slot in slots if slot.frame_status == "required"]
+    required_years = {slot.release_year for slot in active_slots}
     failed = [
         audit for audit in audit_frames(rows, required_years=required_years) if not audit.complete
     ]
@@ -385,7 +402,7 @@ def resolve_pilot_titles(
         raise ValueError(f"Cannot resolve titles from incomplete frames: {detail}")
     row_by_year_rank = {(row.cohort_year, row.cohort_rank): row for row in rows}
     resolved: list[ResolvedPilotTitle] = []
-    for slot in slots:
+    for slot in active_slots:
         skipped: list[int] = []
         for rank in slot.rank_replacement_order:
             row = row_by_year_rank[(slot.release_year, rank)]

@@ -59,7 +59,7 @@ Eligible sources must have an identifiable author or responsible institution, pu
 
 Only one item per author and outlet may be used for a film. Computational similarity checks and citation tracing will identify copied, syndicated, or dependent sources. Dependent texts count as one evidentiary lineage rather than independent agreement. Source counts are capped so that canonical or recent films do not receive more weight merely because more has been written about them.
 
-A film is scorable only when at least four independent eligible sources are available, including both contemporary reviews and at least two source types. Otherwise the film is replaced using the presampled list, and the failure remains in the coverage log.
+A film is scorable only when at least four independent eligible sources are available: both contemporary reviews, an authoritative synopsis, and at least one later retrospective or scholarly source. Otherwise the film is replaced using the presampled list, and the failure remains in the coverage log.
 
 ## D. Automated extraction record
 
@@ -81,9 +81,9 @@ ending_response
 explicit_temporal_contrast
 ```
 
-Allowed `claim_target` values are film, character, filmmaker, critic, audience, and society. Allowed `claim_type` values are plot fact, film-theme attribution, film-stance attribution, critic preference, and reception claim.
+Allowed `claim_target` values are film, character, filmmaker, critic, audience, and society. Allowed `claim_type` values are plot fact, film-theme attribution, film-stance attribution, plot consequence, critic preference, and reception claim.
 
-Only film-attributed interpretations and explicit plot consequences may contribute to the film's stance. A critic's personal preference cannot be converted into a film stance. Plot description may support presence or sequencing but cannot by itself establish endorsement.
+Plot facts or consequences about the film or its characters and claims explicitly attributing a theme or stance to the film may contribute to film-theme centrality. Critic-preference and reception claims remain auditable records but never enter film-theme centrality or stance. Only film-attributed stance claims and explicit plot consequences from interpretive sources may contribute to stance; the designated synopsis never casts a directional stance vote. Plot description may support presence or sequencing but cannot by itself establish endorsement.
 
 `narrative_segment` is `main_body`, `ending`, or `global_unspecified`. Main-body and ending labels require explicit temporal evidence. Global claims will not be forced into a segment. References to a finale, final act, climax, resolution, final outcome, comeuppance, renunciation, redemption, atonement, or culminating sacrifice may support an ending classification when the surrounding passage confirms that use.
 

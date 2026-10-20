@@ -29,16 +29,18 @@ def record(
     salience: SourceSalience = SourceSalience.IMPORTANT,
     stance: SourceStance = SourceStance.AFFIRMATIVE,
     claim_type: ClaimType = ClaimType.FILM_STANCE_ATTRIBUTION,
+    claim_target: ClaimTarget = ClaimTarget.FILM,
+    source_type: SourceType = SourceType.CONTEMPORARY_REVIEW,
     ending_response: EndingResponse | None = None,
 ) -> EvidenceRecord:
     return EvidenceRecord(
         film_id="film-1",
         source_id=source_id,
         lineage_id=lineage_id or source_id,
-        source_type=SourceType.CONTEMPORARY_REVIEW,
+        source_type=source_type,
         exact_evidence_span="The film makes excess seductive.",
         locator="paragraph 4",
-        claim_target=ClaimTarget.FILM,
+        claim_target=claim_target,
         claim_type=claim_type,
         theme=Theme.CONSUMERISM_MATERIALISM,
         narrative_segment=segment,
@@ -59,6 +61,10 @@ class EvidenceTests(unittest.TestCase):
             evidence_span_matches("The film portrays wealth.", "The film celebrates wealth.")
         )
 
+    def test_compatibility_characters_are_not_silently_rewritten(self) -> None:
+        self.assertFalse(evidence_span_matches("Choice ① remains.", "Choice 1 remains."))
+        self.assertFalse(evidence_span_matches("The value is x².", "The value is x2."))
+
 
 class SourceCollapseTests(unittest.TestCase):
     def test_conflicting_stance_within_source_becomes_mixed(self) -> None:
@@ -75,6 +81,68 @@ class SourceCollapseTests(unittest.TestCase):
         votes = collapse_source_records(
             [record("s1", claim_type=ClaimType.CRITIC_PREFERENCE)]
         )
+        self.assertEqual(votes, [])
+
+    def test_critic_and_reception_claims_do_not_raise_centrality(self) -> None:
+        votes = collapse_source_records(
+            [
+                record(
+                    "s1",
+                    salience=SourceSalience.CENTRAL,
+                    claim_type=ClaimType.CRITIC_PREFERENCE,
+                ),
+                record(
+                    "s2",
+                    salience=SourceSalience.CENTRAL,
+                    claim_type=ClaimType.RECEPTION_CLAIM,
+                ),
+            ]
+        )
+        self.assertEqual(votes, [])
+
+    def test_nonfilm_attribution_does_not_raise_centrality(self) -> None:
+        votes = collapse_source_records(
+            [
+                record(
+                    "s1",
+                    claim_type=ClaimType.FILM_THEME_ATTRIBUTION,
+                    claim_target=ClaimTarget.CRITIC,
+                )
+            ]
+        )
+        self.assertEqual(votes, [])
+
+    def test_critic_preference_cannot_inflate_valid_theme_salience(self) -> None:
+        votes = collapse_source_records(
+            [
+                record(
+                    "s1",
+                    salience=SourceSalience.PRESENT_INCIDENTAL,
+                    claim_type=ClaimType.FILM_THEME_ATTRIBUTION,
+                ),
+                record(
+                    "s1",
+                    salience=SourceSalience.CENTRAL,
+                    claim_type=ClaimType.CRITIC_PREFERENCE,
+                ),
+            ]
+        )
+        self.assertEqual(votes[0].salience, SourceSalience.PRESENT_INCIDENTAL)
+
+    def test_synopsis_contributes_presence_but_not_stance(self) -> None:
+        votes = collapse_source_records(
+            [
+                record(
+                    "synopsis",
+                    source_type=SourceType.REFERENCE_SYNOPSIS,
+                    claim_type=ClaimType.PLOT_CONSEQUENCE,
+                    claim_target=ClaimTarget.CHARACTER,
+                    salience=SourceSalience.CENTRAL,
+                    stance=SourceStance.AFFIRMATIVE,
+                )
+            ]
+        )
+        self.assertEqual(votes[0].salience, SourceSalience.CENTRAL)
         self.assertIs(votes[0].stance, SourceStance.UNSTATED)
 
 
@@ -105,6 +173,18 @@ class FilmAggregationTests(unittest.TestCase):
     def test_two_concordant_directional_sources_set_stance(self) -> None:
         score = self.score(record("s1"), record("s2"))
         self.assertIs(score.stance, FilmStance.AFFIRMATIVE)
+
+    def test_synopsis_cannot_supply_second_directional_vote(self) -> None:
+        score = self.score(
+            record("review"),
+            record(
+                "synopsis",
+                source_type=SourceType.REFERENCE_SYNOPSIS,
+                claim_type=ClaimType.PLOT_CONSEQUENCE,
+                claim_target=ClaimTarget.CHARACTER,
+            ),
+        )
+        self.assertIs(score.stance, FilmStance.UNRESOLVED)
 
     def test_one_directional_source_is_unresolved(self) -> None:
         score = self.score(record("s1"))

@@ -14,20 +14,28 @@ from .models import (
     ClaimType,
     EndingResponse,
     EvidenceRecord,
+    EvidenceVerificationResult,
     FilmStance,
     NarrativeSegment,
     SourceSalience,
     SourceStance,
     SourceType,
     Theme,
+    VerificationReason,
 )
-from .serialization import evidence_record_from_dict, evidence_record_to_dict
+from .serialization import (
+    evidence_record_from_dict,
+    evidence_record_to_dict,
+    verification_result_from_dict,
+    verification_result_to_dict,
+)
 
 __all__ = [
     "ClaimTarget",
     "ClaimType",
     "EndingResponse",
     "EvidenceRecord",
+    "EvidenceVerificationResult",
     "FilmStance",
     "FilmThemeScore",
     "NarrativeSegment",
@@ -36,6 +44,7 @@ __all__ = [
     "SourceType",
     "SourceVote",
     "Theme",
+    "VerificationReason",
     "aggregate_film_theme",
     "collapse_source_records",
     "evidence_span_matches",
@@ -44,4 +53,6 @@ __all__ = [
     "glamorize_then_punish",
     "not_evidenced_score",
     "normalize_evidence_text",
+    "verification_result_from_dict",
+    "verification_result_to_dict",
 ]

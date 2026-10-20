@@ -33,12 +33,12 @@ _TYPOGRAPHIC_TRANSLATION = str.maketrans(
 def normalize_evidence_text(text: str) -> str:
     """Apply the protocol's loss-limited normalization.
 
-    Normalization is deliberately conservative: Unicode compatibility forms,
-    typographic punctuation, and whitespace may change. Case, words, and word
-    order may not.
+    Normalization is deliberately conservative: canonically equivalent Unicode,
+    typographic punctuation, and whitespace may change. Compatibility characters,
+    case, words, and word order may not.
     """
 
-    normalized = unicodedata.normalize("NFKC", text).translate(_TYPOGRAPHIC_TRANSLATION)
+    normalized = unicodedata.normalize("NFC", text).translate(_TYPOGRAPHIC_TRANSLATION)
     return re.sub(r"\s+", " ", normalized).strip()
 
 

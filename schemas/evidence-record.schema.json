@@ -17,6 +17,7 @@
     "narrative_segment",
     "source_salience",
     "source_stance",
+    "ending_response",
     "explicit_temporal_contrast"
   ],
   "properties": {

@@ -6,13 +6,20 @@ from film_values.models import (
     ClaimTarget,
     ClaimType,
     EvidenceRecord,
+    EvidenceVerificationResult,
     NarrativeSegment,
     SourceSalience,
     SourceStance,
     SourceType,
     Theme,
+    VerificationReason,
 )
-from film_values.serialization import evidence_record_from_dict, evidence_record_to_dict
+from film_values.serialization import (
+    evidence_record_from_dict,
+    evidence_record_to_dict,
+    verification_result_from_dict,
+    verification_result_to_dict,
+)
 
 
 class SerializationTests(unittest.TestCase):
@@ -53,6 +60,38 @@ class SerializationTests(unittest.TestCase):
         value["explicit_temporal_contrast"] = "false"
         with self.assertRaisesRegex(ValueError, "must be a boolean"):
             evidence_record_from_dict(value)
+
+    def test_verification_round_trip(self) -> None:
+        original = EvidenceVerificationResult(
+            accepted=False,
+            reason_codes=(VerificationReason.STANCE_UNSUPPORTED,),
+            explanation="The quoted passage does not attribute a stance to the film.",
+        )
+        self.assertEqual(
+            verification_result_from_dict(verification_result_to_dict(original)),
+            original,
+        )
+
+    def test_accepted_verification_rejects_failure_codes(self) -> None:
+        with self.assertRaisesRegex(ValueError, "requires only"):
+            EvidenceVerificationResult(
+                accepted=True,
+                reason_codes=(
+                    VerificationReason.ACCEPTED,
+                    VerificationReason.THEME_UNSUPPORTED,
+                ),
+                explanation="Contradictory result.",
+            )
+
+    def test_rejected_verification_rejects_accepted_code(self) -> None:
+        with self.assertRaisesRegex(ValueError, "may not contain"):
+            verification_result_from_dict(
+                {
+                    "accepted": False,
+                    "reason_codes": ["accepted"],
+                    "explanation": "Contradictory result.",
+                }
+            )
 
 
 if __name__ == "__main__":
