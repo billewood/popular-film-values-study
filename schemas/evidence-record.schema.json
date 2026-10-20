@@ -18,7 +18,10 @@
     "source_salience",
     "source_stance",
     "ending_response",
-    "explicit_temporal_contrast"
+    "explicit_temporal_contrast",
+    "claim_dependence",
+    "attributed_source_ids",
+    "attribution_span"
   ],
   "properties": {
     "film_id": {"type": "string", "minLength": 1},
@@ -85,6 +88,42 @@
         null
       ]
     },
-    "explicit_temporal_contrast": {"type": "boolean"}
-  }
+    "explicit_temporal_contrast": {"type": "boolean"},
+    "claim_dependence": {
+      "description": "Whether this is the document author's own interpretation or a claim explicitly attributed to other selected source(s).",
+      "enum": ["independent_interpretation", "attributed_derivative"]
+    },
+    "attributed_source_ids": {
+      "description": "Stable selected-source identifiers supplying an attributed derivative claim; empty for an independent interpretation.",
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "attribution_span": {
+      "description": "Exact text within exact_evidence_span that makes the attribution explicit; null for an independent interpretation.",
+      "type": ["string", "null"]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "claim_dependence": {"const": "independent_interpretation"}
+        },
+        "required": ["claim_dependence"]
+      },
+      "then": {
+        "properties": {
+          "attributed_source_ids": {"maxItems": 0},
+          "attribution_span": {"const": null}
+        }
+      },
+      "else": {
+        "properties": {
+          "attributed_source_ids": {"minItems": 1},
+          "attribution_span": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  ]
 }

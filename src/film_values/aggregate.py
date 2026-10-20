@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Collection, Mapping
 from dataclasses import dataclass
 from typing import Iterable
 
+from .evidence import validate_claim_attribution_sources
 from .models import (
+    ClaimDependence,
     ClaimTarget,
     ClaimType,
     EndingResponse,
@@ -101,6 +104,11 @@ def _combine_stances(stances: Iterable[SourceStance]) -> SourceStance:
 def _contributes_to_film_theme(record: EvidenceRecord) -> bool:
     """Return whether a claim is evidence about the sampled film's thematic content."""
 
+    # Attributed quotations and paraphrases remain in the evidence archive, but
+    # the selected source that originated the claim must supply any analytic vote.
+    # This prevents repeated authority from becoming false corroboration.
+    if record.claim_dependence is ClaimDependence.ATTRIBUTED_DERIVATIVE:
+        return False
     if record.claim_type not in _CENTRALITY_ELIGIBLE_CLAIMS:
         return False
     if record.claim_type in {
@@ -123,11 +131,28 @@ def _contributes_to_film_stance(record: EvidenceRecord) -> bool:
     return False
 
 
-def collapse_source_records(records: Iterable[EvidenceRecord]) -> list[SourceVote]:
+def collapse_source_records(
+    records: Iterable[EvidenceRecord],
+    *,
+    selected_source_ids_by_film: Mapping[str, Collection[str]] | None = None,
+) -> list[SourceVote]:
     """Collapse passages to one vote per source, theme, and segment."""
 
-    groups: dict[tuple[str, str, Theme, NarrativeSegment], list[EvidenceRecord]] = defaultdict(list)
-    for record in records:
+    record_list = list(records)
+    if any(
+        record.claim_dependence is ClaimDependence.ATTRIBUTED_DERIVATIVE
+        for record in record_list
+    ):
+        if selected_source_ids_by_film is None:
+            raise ValueError(
+                "Derivative evidence requires the frozen selected-source universe"
+            )
+        validate_claim_attribution_sources(record_list, selected_source_ids_by_film)
+
+    groups: dict[
+        tuple[str, str, Theme, NarrativeSegment], list[EvidenceRecord]
+    ] = defaultdict(list)
+    for record in record_list:
         key = (
             record.film_id,
             record.source_id,

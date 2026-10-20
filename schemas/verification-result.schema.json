@@ -22,6 +22,7 @@
           "stance_unsupported",
           "critic_preference_misclassified",
           "ending_response_unsupported",
+          "claim_dependence_incorrect",
           "selfishness_guardrail_failed",
           "consumerism_guardrail_failed",
           "insufficient_context",

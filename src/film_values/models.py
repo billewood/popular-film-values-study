@@ -48,6 +48,13 @@ class ClaimType(str, Enum):
     RECEPTION_CLAIM = "reception_claim"
 
 
+class ClaimDependence(str, Enum):
+    """Whether a claim is the source's own interpretation or repeated authority."""
+
+    INDEPENDENT_INTERPRETATION = "independent_interpretation"
+    ATTRIBUTED_DERIVATIVE = "attributed_derivative"
+
+
 class SourceType(str, Enum):
     CONTEMPORARY_REVIEW = "contemporary_review"
     RETROSPECTIVE_ESSAY = "retrospective_essay"
@@ -95,6 +102,7 @@ class VerificationReason(str, Enum):
     STANCE_UNSUPPORTED = "stance_unsupported"
     CRITIC_PREFERENCE_MISCLASSIFIED = "critic_preference_misclassified"
     ENDING_RESPONSE_UNSUPPORTED = "ending_response_unsupported"
+    CLAIM_DEPENDENCE_INCORRECT = "claim_dependence_incorrect"
     SELFISHNESS_GUARDRAIL_FAILED = "selfishness_guardrail_failed"
     CONSUMERISM_GUARDRAIL_FAILED = "consumerism_guardrail_failed"
     INSUFFICIENT_CONTEXT = "insufficient_context"
@@ -116,9 +124,12 @@ class EvidenceRecord:
     theme: Theme
     narrative_segment: NarrativeSegment
     source_salience: SourceSalience
+    claim_dependence: ClaimDependence
     source_stance: SourceStance = SourceStance.UNSTATED
     ending_response: EndingResponse | None = None
     explicit_temporal_contrast: bool = False
+    attributed_source_ids: tuple[str, ...] = ()
+    attribution_span: str | None = None
 
     def __post_init__(self) -> None:
         required = {
@@ -136,6 +147,40 @@ class EvidenceRecord:
             and self.narrative_segment is not NarrativeSegment.ENDING
         ):
             raise ValueError("ending_response is permitted only for ending evidence")
+        if not isinstance(self.claim_dependence, ClaimDependence):
+            raise TypeError("claim_dependence must be a ClaimDependence value")
+        if type(self.attributed_source_ids) is not tuple:
+            raise TypeError("attributed_source_ids must be a tuple")
+        if self.attribution_span is not None and not isinstance(
+            self.attribution_span, str
+        ):
+            raise TypeError("attribution_span must be a string or None")
+        if any(
+            not isinstance(value, str) or not value.strip()
+            for value in self.attributed_source_ids
+        ):
+            raise ValueError("attributed_source_ids must contain nonempty strings")
+        if len(self.attributed_source_ids) != len(set(self.attributed_source_ids)):
+            raise ValueError("attributed_source_ids must be unique")
+        if self.source_id in self.attributed_source_ids:
+            raise ValueError("A source may not be attributed as the origin of its own claim")
+
+        if self.claim_dependence is ClaimDependence.INDEPENDENT_INTERPRETATION:
+            if self.attributed_source_ids or self.attribution_span is not None:
+                raise ValueError(
+                    "Independent interpretation may not name attributed sources or a span"
+                )
+        elif self.claim_dependence is ClaimDependence.ATTRIBUTED_DERIVATIVE:
+            if not self.attributed_source_ids:
+                raise ValueError(
+                    "Attributed derivative requires at least one source identifier"
+                )
+            if self.attribution_span is None or not self.attribution_span.strip():
+                raise ValueError("Attributed derivative requires a nonempty attribution span")
+            if self.attribution_span not in self.exact_evidence_span:
+                raise ValueError(
+                    "attribution_span must occur verbatim within exact_evidence_span"
+                )
 
 
 @dataclass(frozen=True, slots=True)

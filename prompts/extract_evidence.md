@@ -10,6 +10,10 @@ The calling program supplies the target film's stable ID and title. Extract only
 
 Every record must contain a short `exact_evidence_span` copied verbatim from the supplied source. Do not paraphrase inside that field. Do not join noncontiguous passages. If the passage does not by itself support the proposed record, emit no record.
 
+Classify claim provenance explicitly. Use `claim_dependence: independent_interpretation` only when the supplied document's author advances the extracted claim as their own interpretation. Use `claim_dependence: attributed_derivative` when the passage merely quotes, paraphrases, or reports the claim of one or more sources in the supplied frozen selected-source list. For a derivative record, copy every matching stable ID into `attributed_source_ids` and copy a short, continuous `attribution_span` verbatim from within `exact_evidence_span` that makes the attribution explicit. A derivative record may not cite its own `source_id`. For an independent record, return `attributed_source_ids: []` and `attribution_span: null`.
+
+Merely citing the same work does not make the current author's independently stated analysis derivative. Conversely, do not relabel repeated authority as independent because the current author agrees with it. If a claim is attributed only to a source outside the supplied frozen selected-source list, do not emit that attributed claim; emit a separate independent claim only when the current author's own interpretation is explicitly supported by its evidence span.
+
 ## What to extract
 
 Extract only explicit claims concerning one or more of these themes:
@@ -83,4 +87,4 @@ Set `explicit_temporal_contrast` to true only when the passage itself contrasts 
 
 ## Supplied metadata
 
-The calling program supplies `film_id`, `film_title`, `source_id`, `lineage_id`, and `source_type`. Copy the supplied ID and type fields exactly into every record; `film_title` is identity context and is not an output field. Use the supplied paragraph or page marker for `locator`.
+The calling program supplies `film_id`, `film_title`, `source_id`, `lineage_id`, `source_type`, and the target film's frozen selected-source IDs with bibliographic labels. Copy the supplied record ID and type fields exactly into every record; `film_title` and the selected-source list are context and are not output fields. Use the supplied paragraph or page marker for `locator`.

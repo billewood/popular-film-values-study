@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 
 from film_values.models import (
+    ClaimDependence,
     ClaimTarget,
     ClaimType,
     EvidenceRecord,
@@ -36,6 +37,7 @@ class SerializationTests(unittest.TestCase):
             theme=Theme.CONSUMERISM_MATERIALISM,
             narrative_segment=NarrativeSegment.MAIN_BODY,
             source_salience=SourceSalience.IMPORTANT,
+            claim_dependence=ClaimDependence.INDEPENDENT_INTERPRETATION,
             source_stance=SourceStance.AFFIRMATIVE,
         )
 
@@ -61,11 +63,86 @@ class SerializationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "must be a boolean"):
             evidence_record_from_dict(value)
 
+    def test_derivative_claim_round_trip_preserves_attribution_audit_fields(self) -> None:
+        original = EvidenceRecord(
+            film_id="film-1",
+            source_id="source-later",
+            lineage_id="lineage-later",
+            source_type=SourceType.SCHOLARSHIP,
+            exact_evidence_span="As source 1 argues, the film makes excess seductive.",
+            locator="page 27",
+            claim_target=ClaimTarget.FILM,
+            claim_type=ClaimType.FILM_STANCE_ATTRIBUTION,
+            theme=Theme.CONSUMERISM_MATERIALISM,
+            narrative_segment=NarrativeSegment.MAIN_BODY,
+            source_salience=SourceSalience.CENTRAL,
+            source_stance=SourceStance.AFFIRMATIVE,
+            claim_dependence=ClaimDependence.ATTRIBUTED_DERIVATIVE,
+            attributed_source_ids=("source-1",),
+            attribution_span="As source 1 argues",
+        )
+        encoded = evidence_record_to_dict(original)
+        self.assertEqual(encoded["attributed_source_ids"], ["source-1"])
+        self.assertEqual(evidence_record_from_dict(encoded), original)
+
+    def test_derivative_claim_requires_source_identifier_and_attribution_span(self) -> None:
+        value = evidence_record_to_dict(self.example())
+        value["claim_dependence"] = "attributed_derivative"
+        with self.assertRaisesRegex(ValueError, "requires at least one source"):
+            evidence_record_from_dict(value)
+
+        value["attributed_source_ids"] = ["source-2"]
+        with self.assertRaisesRegex(ValueError, "requires a nonempty attribution span"):
+            evidence_record_from_dict(value)
+
+    def test_independent_claim_rejects_attribution_metadata(self) -> None:
+        value = evidence_record_to_dict(self.example())
+        value["attributed_source_ids"] = ["source-2"]
+        value["attribution_span"] = "According to source 2"
+        with self.assertRaisesRegex(ValueError, "Independent interpretation"):
+            evidence_record_from_dict(value)
+
+    def test_derivative_claim_rejects_self_attribution(self) -> None:
+        value = evidence_record_to_dict(self.example())
+        value["claim_dependence"] = "attributed_derivative"
+        value["attributed_source_ids"] = ["source-1"]
+        value["attribution_span"] = "The source says"
+        value["exact_evidence_span"] = "The source says excess is seductive."
+        with self.assertRaisesRegex(ValueError, "own claim"):
+            evidence_record_from_dict(value)
+
+    def test_direct_construction_rejects_untyped_dependence_value(self) -> None:
+        fields = evidence_record_to_dict(self.example())
+        fields["claim_dependence"] = "attributed_derivative"
+        fields["attributed_source_ids"] = ("source-2",)
+        fields["attribution_span"] = "The earlier source says"
+        fields["exact_evidence_span"] = "The earlier source says excess is seductive."
+        fields["source_type"] = SourceType(fields["source_type"])
+        fields["claim_target"] = ClaimTarget(fields["claim_target"])
+        fields["claim_type"] = ClaimType(fields["claim_type"])
+        fields["theme"] = Theme(fields["theme"])
+        fields["narrative_segment"] = NarrativeSegment(fields["narrative_segment"])
+        fields["source_salience"] = SourceSalience(fields["source_salience"])
+        fields["source_stance"] = SourceStance(fields["source_stance"])
+        with self.assertRaisesRegex(TypeError, "must be a ClaimDependence"):
+            EvidenceRecord(**fields)
+
     def test_verification_round_trip(self) -> None:
         original = EvidenceVerificationResult(
             accepted=False,
             reason_codes=(VerificationReason.STANCE_UNSUPPORTED,),
             explanation="The quoted passage does not attribute a stance to the film.",
+        )
+        self.assertEqual(
+            verification_result_from_dict(verification_result_to_dict(original)),
+            original,
+        )
+
+    def test_claim_dependence_failure_reason_round_trip(self) -> None:
+        original = EvidenceVerificationResult(
+            accepted=False,
+            reason_codes=(VerificationReason.CLAIM_DEPENDENCE_INCORRECT,),
+            explanation="The passage only repeats the selected release review.",
         )
         self.assertEqual(
             verification_result_from_dict(verification_result_to_dict(original)),

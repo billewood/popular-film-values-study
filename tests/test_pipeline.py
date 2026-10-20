@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 
 from film_values import (
+    ClaimDependence,
     ClaimTarget,
     ClaimType,
     EndingResponse,
@@ -15,9 +16,11 @@ from film_values import (
     Theme,
     aggregate_film_theme,
     collapse_source_records,
+    evidence_record_spans_match,
     evidence_span_matches,
     glamorize_then_punish,
     not_evidenced_score,
+    validate_claim_attribution_sources,
 )
 
 
@@ -32,13 +35,17 @@ def record(
     claim_target: ClaimTarget = ClaimTarget.FILM,
     source_type: SourceType = SourceType.CONTEMPORARY_REVIEW,
     ending_response: EndingResponse | None = None,
+    exact_evidence_span: str = "The film makes excess seductive.",
+    claim_dependence: ClaimDependence = ClaimDependence.INDEPENDENT_INTERPRETATION,
+    attributed_source_ids: tuple[str, ...] = (),
+    attribution_span: str | None = None,
 ) -> EvidenceRecord:
     return EvidenceRecord(
         film_id="film-1",
         source_id=source_id,
         lineage_id=lineage_id or source_id,
         source_type=source_type,
-        exact_evidence_span="The film makes excess seductive.",
+        exact_evidence_span=exact_evidence_span,
         locator="paragraph 4",
         claim_target=claim_target,
         claim_type=claim_type,
@@ -47,6 +54,9 @@ def record(
         source_salience=salience,
         source_stance=stance,
         ending_response=ending_response,
+        claim_dependence=claim_dependence,
+        attributed_source_ids=attributed_source_ids,
+        attribution_span=attribution_span,
     )
 
 
@@ -64,6 +74,60 @@ class EvidenceTests(unittest.TestCase):
     def test_compatibility_characters_are_not_silently_rewritten(self) -> None:
         self.assertFalse(evidence_span_matches("Choice ① remains.", "Choice 1 remains."))
         self.assertFalse(evidence_span_matches("The value is x².", "The value is x2."))
+
+    def test_derivative_record_checks_exact_attribution_span(self) -> None:
+        derivative = record(
+            "later",
+            exact_evidence_span="As the earlier review put it, excess is seductive.",
+            claim_dependence=ClaimDependence.ATTRIBUTED_DERIVATIVE,
+            attributed_source_ids=("earlier",),
+            attribution_span="As the earlier review put it",
+        )
+        self.assertTrue(
+            evidence_record_spans_match(
+                "As the earlier review put it, excess is seductive.",
+                derivative,
+            )
+        )
+        self.assertFalse(
+            evidence_record_spans_match(
+                "A different critic said excess is seductive.",
+                derivative,
+            )
+        )
+
+    def test_attributed_sources_must_be_selected_for_the_same_film(self) -> None:
+        derivative = record(
+            "later",
+            exact_evidence_span="As the earlier review put it, excess is seductive.",
+            claim_dependence=ClaimDependence.ATTRIBUTED_DERIVATIVE,
+            attributed_source_ids=("earlier",),
+            attribution_span="As the earlier review put it",
+        )
+        validate_claim_attribution_sources(
+            [derivative],
+            {"film-1": {"later", "earlier"}},
+        )
+
+        with self.assertRaisesRegex(ValueError, "not selected for film 'film-1'"):
+            validate_claim_attribution_sources(
+                [derivative],
+                {
+                    "film-1": {"later"},
+                    "film-2": {"earlier"},
+                },
+            )
+
+    def test_attributed_source_validation_fails_without_film_universe(self) -> None:
+        derivative = record(
+            "later",
+            exact_evidence_span="As the earlier review put it, excess is seductive.",
+            claim_dependence=ClaimDependence.ATTRIBUTED_DERIVATIVE,
+            attributed_source_ids=("earlier",),
+            attribution_span="As the earlier review put it",
+        )
+        with self.assertRaisesRegex(ValueError, "No frozen selected-source universe"):
+            validate_claim_attribution_sources([derivative], {})
 
 
 class SourceCollapseTests(unittest.TestCase):
@@ -145,6 +209,34 @@ class SourceCollapseTests(unittest.TestCase):
         self.assertEqual(votes[0].salience, SourceSalience.CENTRAL)
         self.assertIs(votes[0].stance, SourceStance.UNSTATED)
 
+    def test_attributed_derivative_is_archived_but_does_not_vote(self) -> None:
+        derivative = record(
+            "later",
+            exact_evidence_span="Quoting the release review, the film makes excess seductive.",
+            claim_dependence=ClaimDependence.ATTRIBUTED_DERIVATIVE,
+            attributed_source_ids=("release-review",),
+            attribution_span="Quoting the release review",
+            salience=SourceSalience.CENTRAL,
+        )
+        self.assertEqual(
+            collapse_source_records(
+                [derivative],
+                selected_source_ids_by_film={"film-1": {"later", "release-review"}},
+            ),
+            [],
+        )
+
+    def test_derivative_collapse_fails_closed_without_frozen_source_universe(self) -> None:
+        derivative = record(
+            "later",
+            exact_evidence_span="Quoting the release review, excess is seductive.",
+            claim_dependence=ClaimDependence.ATTRIBUTED_DERIVATIVE,
+            attributed_source_ids=("release-review",),
+            attribution_span="Quoting the release review",
+        )
+        with self.assertRaisesRegex(ValueError, "requires the frozen selected-source"):
+            collapse_source_records([derivative])
+
 
 class FilmAggregationTests(unittest.TestCase):
     def score(self, *records: EvidenceRecord):
@@ -169,6 +261,54 @@ class FilmAggregationTests(unittest.TestCase):
         self.assertEqual(score.supporting_lineages, 1)
         self.assertEqual(score.centrality, 2)
         self.assertIs(score.stance, FilmStance.UNRESOLVED)
+
+    def test_derivative_source_cannot_supply_independent_corroboration(self) -> None:
+        original = record("release-review", salience=SourceSalience.CENTRAL)
+        derivative = record(
+            "later-scholarship",
+            exact_evidence_span="The release review says the film makes excess seductive.",
+            claim_dependence=ClaimDependence.ATTRIBUTED_DERIVATIVE,
+            attributed_source_ids=("release-review",),
+            attribution_span="The release review says",
+            salience=SourceSalience.CENTRAL,
+        )
+        votes = collapse_source_records(
+            [original, derivative],
+            selected_source_ids_by_film={
+                "film-1": {"release-review", "later-scholarship"}
+            },
+        )
+        self.assertEqual([vote.source_id for vote in votes], ["release-review"])
+        score = aggregate_film_theme(votes)
+        self.assertEqual(score.supporting_lineages, 1)
+        self.assertEqual(score.centrality, 2)
+        self.assertIs(score.stance, FilmStance.UNRESOLVED)
+
+    def test_derivative_record_cannot_inflate_an_independent_source_vote(self) -> None:
+        independent = record(
+            "later-scholarship",
+            salience=SourceSalience.PRESENT_INCIDENTAL,
+            stance=SourceStance.UNSTATED,
+            claim_type=ClaimType.FILM_THEME_ATTRIBUTION,
+        )
+        derivative = record(
+            "later-scholarship",
+            exact_evidence_span="The release review says the film makes excess seductive.",
+            claim_dependence=ClaimDependence.ATTRIBUTED_DERIVATIVE,
+            attributed_source_ids=("release-review",),
+            attribution_span="The release review says",
+            salience=SourceSalience.CENTRAL,
+            stance=SourceStance.AFFIRMATIVE,
+        )
+        vote = collapse_source_records(
+            [independent, derivative],
+            selected_source_ids_by_film={
+                "film-1": {"later-scholarship", "release-review"}
+            },
+        )[0]
+        self.assertIs(vote.salience, SourceSalience.PRESENT_INCIDENTAL)
+        self.assertIs(vote.stance, SourceStance.UNSTATED)
+        self.assertEqual(vote.evidence_count, 1)
 
     def test_two_concordant_directional_sources_set_stance(self) -> None:
         score = self.score(record("s1"), record("s2"))

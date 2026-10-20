@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from collections.abc import Collection, Iterable, Mapping
 
-from .models import EvidenceRecord
+from .models import ClaimDependence, EvidenceRecord
 
 
 _TYPOGRAPHIC_TRANSLATION = str.maketrans(
@@ -50,3 +51,55 @@ def evidence_span_matches(source_text: str, evidence: str | EvidenceRecord) -> b
     if not normalized_span:
         return False
     return normalized_span in normalize_evidence_text(source_text)
+
+
+def evidence_record_spans_match(source_text: str, record: EvidenceRecord) -> bool:
+    """Verify the claim span and, when present, its exact attribution span."""
+
+    if not evidence_span_matches(source_text, record):
+        return False
+    if record.attribution_span is None:
+        return True
+    return evidence_span_matches(source_text, record.attribution_span)
+
+
+def validate_claim_attribution_sources(
+    records: Iterable[EvidenceRecord],
+    selected_source_ids_by_film: Mapping[str, Collection[str]],
+) -> None:
+    """Fail unless every derivative points inside its film's frozen source universe."""
+
+    cached_universes: dict[str, frozenset[str]] = {}
+    for record in records:
+        if record.claim_dependence is not ClaimDependence.ATTRIBUTED_DERIVATIVE:
+            continue
+
+        if record.film_id not in selected_source_ids_by_film:
+            raise ValueError(
+                f"No frozen selected-source universe was supplied for film {record.film_id!r}"
+            )
+        if record.film_id not in cached_universes:
+            raw_universe = selected_source_ids_by_film[record.film_id]
+            if isinstance(raw_universe, (str, bytes)):
+                raise TypeError("A selected-source universe must be a collection of IDs")
+            if any(
+                not isinstance(value, str) or not value.strip()
+                for value in raw_universe
+            ):
+                raise ValueError("Selected-source universes must contain nonempty string IDs")
+            cached_universes[record.film_id] = frozenset(raw_universe)
+
+        universe = cached_universes[record.film_id]
+        if record.source_id not in universe:
+            raise ValueError(
+                f"Evidence source {record.source_id!r} is not selected for film "
+                f"{record.film_id!r}"
+            )
+        if record.source_id in record.attributed_source_ids:
+            raise ValueError("A derivative claim may not attribute itself as its source")
+        unknown = sorted(set(record.attributed_source_ids) - universe)
+        if unknown:
+            raise ValueError(
+                f"Attributed source IDs are not selected for film {record.film_id!r}: "
+                f"{unknown}"
+            )
