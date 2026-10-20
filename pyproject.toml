@@ -1,0 +1,8 @@
+[project]
+name = "popular-film-values"
+version = "0.1.0"
+description = "Auditable source-based measurement tools for the Popular Film Values Study"
+requires-python = ">=3.11"
+
+[tool.unittest]
+start-directory = "tests"

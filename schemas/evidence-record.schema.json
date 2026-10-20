@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/billewood/popular-film-values-study/schemas/evidence-record.schema.json",
+  "title": "Film Values Evidence Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "film_id",
+    "source_id",
+    "lineage_id",
+    "source_type",
+    "exact_evidence_span",
+    "locator",
+    "claim_target",
+    "claim_type",
+    "theme",
+    "narrative_segment",
+    "source_salience",
+    "source_stance",
+    "explicit_temporal_contrast"
+  ],
+  "properties": {
+    "film_id": {"type": "string", "minLength": 1},
+    "source_id": {"type": "string", "minLength": 1},
+    "lineage_id": {"type": "string", "minLength": 1},
+    "source_type": {
+      "enum": [
+        "contemporary_review",
+        "retrospective_essay",
+        "scholarship",
+        "reference_synopsis"
+      ]
+    },
+    "exact_evidence_span": {"type": "string", "minLength": 1},
+    "locator": {"type": "string", "minLength": 1},
+    "claim_target": {
+      "enum": ["film", "character", "filmmaker", "critic", "audience", "society"]
+    },
+    "claim_type": {
+      "enum": [
+        "plot_fact",
+        "film_theme_attribution",
+        "film_stance_attribution",
+        "plot_consequence",
+        "critic_preference",
+        "reception_claim"
+      ]
+    },
+    "theme": {
+      "enum": [
+        "selfishness",
+        "consumerism_materialism",
+        "status_fame_power",
+        "achievement_work_competition",
+        "romantic_familial_love",
+        "friendship_community_solidarity",
+        "care_service_sacrifice",
+        "justice_duty_public_good",
+        "art_creativity_beauty",
+        "knowledge_truth_discovery",
+        "religious_conviction_institutions",
+        "spiritual_existential_meaning",
+        "pleasure_adventure",
+        "revenge",
+        "freedom_autonomy"
+      ]
+    },
+    "narrative_segment": {
+      "enum": ["main_body", "ending", "global_unspecified"]
+    },
+    "source_salience": {"enum": [1, 2, 3]},
+    "source_stance": {
+      "enum": ["affirmative", "critical", "mixed", "unstated"]
+    },
+    "ending_response": {
+      "type": ["string", "null"],
+      "enum": [
+        "original_pursuit_reinforced",
+        "external_punishment_only",
+        "remorse_verbal_recognition",
+        "changed_behavior",
+        "costly_repair_sacrifice",
+        "ambiguous",
+        null
+      ]
+    },
+    "explicit_temporal_contrast": {"type": "boolean"}
+  }
+}
