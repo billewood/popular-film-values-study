@@ -33,3 +33,9 @@ The algorithm is implemented in `src/film_values/sampling.py` and tested in `tes
 - Any circumstance not covered above requires a dated amendment before a replacement is made.
 
 The generated slot table is committed as `data/pilot_slots.csv`. It contains no thematic data or film titles.
+
+## Metadata-frame amendment
+
+On 2026-10-19, reconstruction showed that the 1960 backup frame for the 1950–1962 period is not constructible under the frozen cutoff: no cumulative U.S.–Canada distributor-rental figure for *Spartacus* could be located by January 31, 1962. A later worldwide theater-gross figure is not commensurate, and the first located U.S.–Canada rental is outside the cutoff. The failed slot remains in the table.
+
+Before any interpretive-source search or theme extraction, `backup_2` was added for that period using the fourth year in the original public-seed year ordering. This mechanically selects 1952 and derives its rank order with the unchanged algorithm and seed. The added slot is an insurance frame only; it does not enlarge the scored pilot and may be used only if the original backup is needed. If 1952 is also nonconstructible, the period stops pending another dated amendment rather than substituting an incomparable ranking quantity.

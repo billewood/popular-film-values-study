@@ -29,6 +29,24 @@ def candidates() -> list[FilmCandidate]:
 
 
 class SamplingTests(unittest.TestCase):
+    def test_public_seed_second_backup_is_stable(self) -> None:
+        slots = draw_pilot_slots(
+            seed="44dfaae218b8f9f195f633840f16099f047d4398",
+            backups_per_period=2,
+        )
+        second_backup = next(
+            row
+            for row in slots
+            if (row.period_start, row.period_end, row.assignment)
+            == (1950, 1962, "backup_2")
+        )
+        self.assertEqual(second_backup.release_year, 1952)
+        self.assertEqual(second_backup.selected_rank, 12)
+        self.assertEqual(
+            second_backup.rank_replacement_order,
+            (12, 13, 18, 23, 17, 16, 21, 14, 24, 25, 22, 15, 11, 19, 20),
+        )
+
     def test_slot_draw_is_deterministic_and_uses_distinct_years(self) -> None:
         first = draw_pilot_slots(seed="public-commit-hash")
         second = draw_pilot_slots(seed="public-commit-hash")
