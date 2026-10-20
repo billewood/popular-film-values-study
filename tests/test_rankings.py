@@ -76,15 +76,28 @@ class RankingAuditTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "requires source_regime"):
             replace(row(1), cohort_year=1960)
 
-    def test_transition_year_rejects_projected_amount_type(self) -> None:
-        with self.assertRaisesRegex(ValueError, "requires source_amount_type"):
+    def test_modern_regime_rejects_rental_amount_type(self) -> None:
+        with self.assertRaisesRegex(ValueError, "does not permit source_amount_type"):
             replace(
                 row(1),
-                cohort_year=1966,
-                source_regime="variety_rental",
-                metric="distributor_rental",
                 source_amount_type="projected_ultimate",
             )
+
+    def test_frame_rejects_mixed_historical_amount_types(self) -> None:
+        rows = [
+            replace(
+                row(rank),
+                cohort_year=1965,
+                first_domestic_release_date="1965-01-01",
+                source_regime="variety_rental",
+                metric="distributor_rental",
+                source_amount_type="cumulative_to_date",
+            )
+            for rank in range(1, 36)
+        ]
+        rows[-1] = replace(rows[-1], source_amount_type="projected_ultimate")
+        audit = audit_frames(rows)[0]
+        self.assertIn("mixed_source_amount_types", audit.errors)
 
     def test_strict_boolean_and_hash_pairing(self) -> None:
         with self.assertRaisesRegex(ValueError, "both be set or empty"):

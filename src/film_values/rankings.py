@@ -55,11 +55,10 @@ METRIC_BY_REGIME = {
     "variety_rental": "distributor_rental",
     "bom_total_gross": "domestic_gross",
 }
-AMOUNT_TYPE_BY_PERIOD = (
-    (1950, 1965, "projected_ultimate"),
-    (1966, 1981, "cumulative_to_date"),
-    (1982, 2025, "release_run_total"),
-)
+AMOUNT_TYPES_BY_REGIME = {
+    "variety_rental": frozenset({"projected_ultimate", "cumulative_to_date"}),
+    "bom_total_gross": frozenset({"release_run_total"}),
+}
 DATE_PRECISIONS = frozenset({"day", "month", "year", "inferred", "unresolved"})
 _SHA256 = re.compile(r"^[a-f0-9]{64}$")
 
@@ -194,14 +193,11 @@ class RankingRow:
                 f"{self.source_regime} requires metric "
                 f"{METRIC_BY_REGIME[self.source_regime]}"
             )
-        expected_amount_type = next(
-            amount_type
-            for start, end, amount_type in AMOUNT_TYPE_BY_PERIOD
-            if start <= self.cohort_year <= end
-        )
-        if self.source_amount_type != expected_amount_type:
+        allowed_amount_types = AMOUNT_TYPES_BY_REGIME[self.source_regime]
+        if self.source_amount_type not in allowed_amount_types:
             raise ValueError(
-                f"{self.cohort_year} requires source_amount_type {expected_amount_type}"
+                f"{self.source_regime} does not permit source_amount_type "
+                f"{self.source_amount_type}"
             )
         if self.source_table_year < self.cohort_year:
             raise ValueError("source_table_year may not precede cohort_year")
@@ -364,6 +360,8 @@ def audit_frames(
         ]
         if len(source_positions) != len(set(source_positions)):
             errors.append("duplicate_source_table_position")
+        if len({row.source_amount_type for row in frame}) != 1:
+            errors.append("mixed_source_amount_types")
         eligible_ranks = sorted(
             row.eligible_rank for row in frame if row.eligible_rank is not None
         )
