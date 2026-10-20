@@ -1,0 +1,13 @@
+cohort_year,stored_rows,live_table_rows,matched_rows,mismatched_rows,checked_fields,validated_at_utc,result
+1982,35,131,35,0,title|source_row_order|amount,2026-10-20T04:08:38Z,exact_match
+1983,35,158,35,0,title|source_row_order|amount,2026-10-20T04:08:38Z,exact_match
+1988,35,200,35,0,title|source_row_order|amount,2026-10-20T04:08:38Z,exact_match
+1992,35,200,35,0,title|source_row_order|amount,2026-10-20T04:08:38Z,exact_match
+1998,35,200,35,0,title|source_row_order|amount,2026-10-20T04:08:38Z,exact_match
+1999,35,200,35,0,title|source_row_order|amount,2026-10-20T04:08:38Z,exact_match
+2005,35,200,35,0,title|source_row_order|amount,2026-10-20T04:08:38Z,exact_match
+2009,35,200,35,0,title|source_row_order|amount,2026-10-20T04:08:38Z,exact_match
+2011,35,200,35,0,title|source_row_order|amount,2026-10-20T04:08:38Z,exact_match
+2018,35,200,35,0,title|source_row_order|amount,2026-10-20T04:08:38Z,exact_match
+2021,35,200,35,0,title|source_row_order|amount,2026-10-20T04:08:38Z,exact_match
+2024,35,200,35,0,title|source_row_order|amount,2026-10-20T04:08:38Z,exact_match

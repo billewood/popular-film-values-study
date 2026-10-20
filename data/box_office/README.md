@@ -8,6 +8,8 @@ This directory contains metadata-only ranking work for the 12 modern-regime year
 - `pilot_title_resolution_1982_2024.csv`: the selected rank in each of the 12 frozen year slots and its resolved title.
 - `excluded_rereleases_1982_2024.csv`: source rows omitted while constructing cohort rank 1–35.
 - `source_access_log.csv`: one primary and one audit access record per year, plus the three primary title-metadata checks used for exclusions.
+- `source_revalidation_log.csv`: a later metadata-only access check with byte counts and SHA-256 fingerprints of all 27 live responses; raw HTML was not redistributed.
+- `live_frame_revalidation.csv`: a later live comparison confirming that title, source-row position, and amount still exactly matched all 420 stored primary rows.
 
 ## Ranking rules applied
 
@@ -30,4 +32,4 @@ The Numbers released-in-year cumulative chart is an audit only. Its values can i
 
 Retrieval times are UTC. `amount` and `secondary_amount` are nominal U.S. dollars. `source_amount_type` is `release_run_total` as required for this regime. `near_tie_flag` is true for either member of an adjacent primary-source pair differing by less than 1%; exact ties are separately flagged.
 
-No raw HTML snapshot was retained in the repository, so `artifact_path` and `artifact_sha256` are intentionally blank. The exact query URLs, retrieval times, status codes, and response sizes are preserved. Both sources returned HTTP 200 for every recorded retrieval. An initial anonymous-style The Numbers request returned HTTP 403, but a subsequent identified research-metadata user agent succeeded for all 12 pages; therefore there is no unresolved data-access blocker for these frames.
+No raw HTML snapshot from the original extraction was retained, so `artifact_path` and `artifact_sha256` are intentionally blank and the derived frame must not be described as a complete source-artifact freeze. The exact query URLs, retrieval times, status codes, and response sizes are preserved. A later revalidation captured response hashes without publishing source pages; those hashes identify that later response but cannot reconstruct the original bytes. The same check compared title, source-row position, and amount for all 420 primary rows and found no mismatch. Both sources returned HTTP 200 for every recorded retrieval. An initial anonymous-style The Numbers request returned HTTP 403, but a subsequent identified research-metadata user agent succeeded for all 12 pages; therefore access worked, while artifact preservation remains a disclosed pre-extraction task.
