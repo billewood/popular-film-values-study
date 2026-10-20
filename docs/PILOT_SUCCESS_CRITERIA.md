@@ -24,7 +24,7 @@ All of the following must pass:
 2. **Rights:** every processed source has a recorded permission basis compatible with the actual model environment. No credential, restricted full text, or unlicensed corpus is committed publicly.
 3. **Schema and provenance:** 100% of accepted records conform to the frozen schema and identify a frozen source, lineage, and locator.
 4. **Exact evidence:** 100% of accepted evidence spans match the archived source under the frozen normalization. A verifier may reject but never repair an unsupported record.
-5. **Negative controls:** all deliberately corrupted quotations are rejected, and no thematic record is accepted when a source is paired with the identity of a different validation film. One of each control type is run per validation source.
+5. **Negative controls:** all deliberately corrupted quotations are rejected, and no thematic record is accepted when a source is paired with the identity of a different validation film that the source does not discuss. One of each control type is run per validation source; comparative sources are deranged only to an unmentioned target.
 6. **No polarity reversal:** the two replicate film-level results contain no direct `affirmative` versus `critical` reversal for the same film, theme, and segment. Leave-one-source-out results likewise contain no such reversal.
 7. **Ending integrity:** every `glamorize_then_punish` result is supported by separate qualifying main-body and ending evidence; external punishment alone never changes the main-body stance.
 

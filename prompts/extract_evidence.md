@@ -4,6 +4,8 @@ You are extracting auditable claims from one supplied publication about one film
 
 Return a JSON array conforming to `schemas/evidence-record.schema.json`. Return `[]` when the source contains no qualifying evidence.
 
+The calling program supplies the target film's stable ID and title. Extract only claims that the supplied passage and context attribute to that target film. Do not trust wrapper metadata when the text concerns another film. If the text does not substantively discuss the target film, return `[]`. A comparative source may qualify, but only its clearly separable claims about the target may be coded.
+
 ## Nonnegotiable evidence rule
 
 Every record must contain a short `exact_evidence_span` copied verbatim from the supplied source. Do not paraphrase inside that field. Do not join noncontiguous passages. If the passage does not by itself support the proposed record, emit no record.
@@ -81,4 +83,4 @@ Set `explicit_temporal_contrast` to true only when the passage itself contrasts 
 
 ## Supplied metadata
 
-The calling program supplies `film_id`, `source_id`, `lineage_id`, and `source_type`. Copy them exactly into every record. Use the supplied paragraph or page marker for `locator`.
+The calling program supplies `film_id`, `film_title`, `source_id`, `lineage_id`, and `source_type`. Copy the supplied ID and type fields exactly into every record; `film_title` is identity context and is not an output field. Use the supplied paragraph or page marker for `locator`.

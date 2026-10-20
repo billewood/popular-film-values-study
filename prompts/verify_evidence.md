@@ -14,5 +14,6 @@ Accept the record only if all of the following are true:
 6. The stance is attributed to the film rather than merely expressing the critic's taste.
 7. Any ending response is explicit and correctly classified.
 8. The selfishness and consumerism guardrails in the extraction prompt are satisfied.
+9. The passage and context concern the supplied target film rather than a different work mentioned by the source.
 
 Reject rather than repair an unsupported record. Do not find a different quotation, add a new theme, or rewrite the evidence. List concise machine-readable reason codes and a brief explanation grounded in the supplied context.
