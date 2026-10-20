@@ -9,6 +9,7 @@ from pathlib import Path
 from film_values.rankings import (
     RankingRow,
     audit_frames,
+    order_cross_table_tie,
     resolve_pilot_titles,
     write_resolved_titles_csv,
 )
@@ -75,9 +76,38 @@ class RankingAuditTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "requires source_regime"):
             replace(row(1), cohort_year=1960)
 
+    def test_transition_year_rejects_projected_amount_type(self) -> None:
+        with self.assertRaisesRegex(ValueError, "requires source_amount_type"):
+            replace(
+                row(1),
+                cohort_year=1966,
+                source_regime="variety_rental",
+                metric="distributor_rental",
+                source_amount_type="projected_ultimate",
+            )
+
     def test_strict_boolean_and_hash_pairing(self) -> None:
         with self.assertRaisesRegex(ValueError, "both be set or empty"):
             replace(row(1), artifact_path="restricted/page.html")
+
+    def test_cross_table_tie_order_is_deterministic_and_input_independent(self) -> None:
+        first = replace(row(21), stable_title_id="afi:one", amount=Decimal(3000000))
+        second = replace(
+            row(22),
+            stable_title_id="afi:two",
+            amount=Decimal(3000000),
+            source_table_year=1983,
+        )
+        forward = order_cross_table_tie([first, second], seed="public-commit")
+        reverse = order_cross_table_tie([second, first], seed="public-commit")
+        self.assertEqual(forward, reverse)
+        self.assertEqual({item.stable_title_id for item in forward}, {"afi:one", "afi:two"})
+
+    def test_cross_table_tie_rejects_different_amounts(self) -> None:
+        first = row(21)
+        second = replace(row(22), source_table_year=1983)
+        with self.assertRaisesRegex(ValueError, "one nonempty retained amount"):
+            order_cross_table_tie([first, second], seed="public-commit")
 
 
 class TitleResolutionTests(unittest.TestCase):

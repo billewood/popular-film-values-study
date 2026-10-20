@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import re
 from dataclasses import dataclass
 from datetime import datetime
@@ -54,6 +55,11 @@ METRIC_BY_REGIME = {
     "variety_rental": "distributor_rental",
     "bom_total_gross": "domestic_gross",
 }
+AMOUNT_TYPE_BY_PERIOD = (
+    (1950, 1965, "projected_ultimate"),
+    (1966, 1981, "cumulative_to_date"),
+    (1982, 2025, "release_run_total"),
+)
 DATE_PRECISIONS = frozenset({"day", "month", "year", "inferred", "unresolved"})
 _SHA256 = re.compile(r"^[a-f0-9]{64}$")
 
@@ -188,6 +194,15 @@ class RankingRow:
                 f"{self.source_regime} requires metric "
                 f"{METRIC_BY_REGIME[self.source_regime]}"
             )
+        expected_amount_type = next(
+            amount_type
+            for start, end, amount_type in AMOUNT_TYPE_BY_PERIOD
+            if start <= self.cohort_year <= end
+        )
+        if self.source_amount_type != expected_amount_type:
+            raise ValueError(
+                f"{self.cohort_year} requires source_amount_type {expected_amount_type}"
+            )
         if self.source_table_year < self.cohort_year:
             raise ValueError("source_table_year may not precede cohort_year")
         if self.source_row_order < 1 or self.cohort_rank < 1:
@@ -227,6 +242,43 @@ class ResolvedPilotTitle:
     slot: PilotSlot
     row: RankingRow
     skipped_ranks: tuple[int, ...]
+
+
+def cross_table_tie_key(seed: str, cohort_year: int, stable_title_id: str) -> bytes:
+    """Return the frozen metadata-only ordering key for a cross-table exact tie."""
+
+    if not seed.strip():
+        raise ValueError("seed may not be empty")
+    if not 1950 <= cohort_year <= 2025:
+        raise ValueError("cohort_year is outside the frozen study window")
+    if not stable_title_id.strip():
+        raise ValueError("stable_title_id may not be empty")
+    payload = f"{seed}|{cohort_year}|{stable_title_id}"
+    return hashlib.sha256(payload.encode("utf-8")).digest()
+
+
+def order_cross_table_tie(
+    rows: Sequence[RankingRow], *, seed: str
+) -> list[RankingRow]:
+    """Deterministically order one equal-amount tie block from multiple tables."""
+
+    if not rows:
+        raise ValueError("tie block may not be empty")
+    year = rows[0].cohort_year
+    amount = rows[0].amount
+    if any(row.cohort_year != year for row in rows):
+        raise ValueError("tie block may not mix cohort years")
+    if amount is None or any(row.amount != amount for row in rows):
+        raise ValueError("tie block must have one nonempty retained amount")
+    if len({row.source_table_year for row in rows}) < 2:
+        raise ValueError("cross-table tie must span at least two source tables")
+    return sorted(
+        rows,
+        key=lambda row: (
+            cross_table_tie_key(seed, year, row.stable_title_id),
+            row.stable_title_id,
+        ),
+    )
 
 
 def ranking_row_from_csv(row: dict[str, str]) -> RankingRow:

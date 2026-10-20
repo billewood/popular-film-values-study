@@ -49,7 +49,7 @@
     "primary_source_citation": {"type": "string", "minLength": 1},
     "primary_source_url": {"type": "string", "format": "uri"},
     "source_table_year": {"type": "integer", "minimum": 1950},
-    "source_amount_type": {"type": "string", "minLength": 1},
+    "source_amount_type": {"enum": ["projected_ultimate", "cumulative_to_date", "release_run_total"]},
     "metric": {"enum": ["distributor_rental", "domestic_gross"]},
     "territory_definition": {"type": "string", "minLength": 1},
     "amount": {"type": ["number", "null"], "minimum": 0},

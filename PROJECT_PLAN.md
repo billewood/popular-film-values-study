@@ -96,3 +96,11 @@ No force-pushes or history rewrites are planned. A later formal registration may
 ### 2026-10-19 — Metadata-only draw precedes title resolution
 
 Version 0.1 said the historical ranking hierarchy would be frozen before the film draw. In practice, the public-seed procedure first froze only year/rank coordinates, with no titles attached. The ranking hierarchy was then frozen before those coordinates were resolved to film identities. This preserves the intended blindness to titles, themes, source availability, and likely findings while making the two-stage procedure explicit. At the time of this amendment, no sampled title, interpretive source, or theme output had been retrieved for the pilot.
+
+### 2026-10-19 — Historical projection and cross-table tie rule
+
+Page-level reconstruction revealed that historical *Variety* tables distinguish rentals to date from projected full-playoff rentals and can contain equal rounded projections in different annual tables, where no common publisher order exists. Before assigning any sampled historical title or retrieving any interpretive source, version 0.2 fixed projected ultimate first-run rental as the ranking quantity and applied a public-seed hash only to exact ties lacking a common source order. The full tied block remains visible for sensitivity analysis. This amendment was prompted by raw ranking metadata; no thematic evidence or film-level output had been accessed.
+
+### 2026-10-19 — Historical amount-type break at the 1966 cohort
+
+Further page-level reconstruction showed that *Variety* abandoned its anticipated-revenue column in the table published in January 1968 and thereafter reported rentals to date. Version 0.2 would therefore have made the 1966 and later frames nonconstructible. Version 0.3 uses projected-ultimate rental within the 1950–1965 release cohorts and latest cumulative rental-to-date within the 1966–1981 cohorts, always at the same fixed information cutoff and never mixed within a cohort. The study continues to use only annual ranks across years, and the break is retained as a measurement-regime variable. No sampled historical title had been assigned and no interpretive source or theme output had been accessed when this rule was fixed.

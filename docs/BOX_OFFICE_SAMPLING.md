@@ -1,5 +1,9 @@
 # Box-office sampling protocol, 1950–2025
 
+**Protocol version:** 0.3
+
+**Last amended:** 2026-10-19; see `PROJECT_PLAN.md`
+
 ## Status and scope
 
 This document freezes the source and adjudication rules for constructing annual U.S./Canada theatrical-popularity frames before film identities are resolved from the already-frozen year/rank slots and before any thematic evidence is collected. It covers (a) the 12-film pilot, sampled from annual cohort ranks 11–25 within the six prespecified periods, and (b) the later census of films occupying cohort ranks 1–10 in each year from 1950 through 2025.
@@ -12,7 +16,7 @@ Use a two-regime hierarchy and never convert or pool the monetary amounts across
 
 | Release years | Primary ranking evidence | Metric | Construction |
 |---|---|---|---|
-| 1950–1981 | *Variety* annual “Top Grossers” / “Big Rental Films” tables, checked against the printed page image | U.S.–Canada distributor rentals | Reconstruct a release-year cohort from the annual tables for reporting years *y* and *y*+1; exclude rereleases and retain each eligible title's latest first-run estimate available by the fixed cutoff |
+| 1950–1981 | *Variety* annual “Top Grossers” / “Big Rental Films” tables, checked against the printed page image | U.S.–Canada distributor rentals: projected ultimate for 1950–1965 release cohorts; cumulative-to-date for 1966–1981 release cohorts | Reconstruct a release-year cohort from the annual tables for reporting years *y* and *y*+1; exclude rereleases and retain each title's latest figure of the cohort's single prespecified amount type available by the fixed cutoff |
 | 1982–2025 | [Box Office Mojo yearly chart](https://www.boxofficemojo.com/year/) with `grossesOption=totalGrosses` for year *y* | Domestic theatrical gross for releases opened in *y*, across the run reported by the database | Download at least raw ranks 1–35, verify that the page is in release-year rather than calendar-gross mode, then apply eligibility rules |
 
 Use [The Numbers release-year cumulative chart](https://www.the-numbers.com/box-office-records/domestic/all-movies/cumulative/released-in-2024) as the routine independent audit for 1982–2025. Use licensed Comscore data or a documented distributor correction only for adjudication if available; do not substitute a public calendar-year list. The 1982 boundary is retained as an explicit `metric_regime` break.
@@ -92,7 +96,11 @@ For each release year *y* from 1950 through 1981:
 1. Obtain and archive the *Variety* annual table published just after reporting year *y* and the table published just after *y*+1. Transcribe the issue-specific method note. Consult *y*+2 only if a title is explicitly deferred or its first complete first-run estimate is still absent.
 2. Double-enter all potentially relevant rows from the page images, including title, displayed amount, source order, release month/year, distributor, estimated/anticipated notation, and reissue notation. OCR may assist discovery but cannot be the final transcription authority.
 3. Verify first domestic commercial release year. Retain only films assigned to *y*.
-4. Classify each amount from its table note as projected ultimate, cumulative-to-date, or reporting-year rental. For a title appearing more than once, use the latest comparable first-run estimate available through **January 31 of *y*+2**. Do not add figures unless the source explicitly defines them as incremental components, and do not substitute a reporting-year amount for a projected-ultimate amount without flagging the change. Never incorporate a later rerelease.
+4. Classify each amount from its table note as projected ultimate, cumulative-to-date, or reporting-year rental. Do not mix amount types within a release-year cohort:
+   - For release cohorts **1950–1965**, retain the latest published projected-ultimate first-run domestic rental available through **January 31 of *y*+2**. A later projected-ultimate figure supersedes an earlier projection, including a title-specific upward or downward revision. A later cumulative-to-date or reporting-year figure does not supersede an ultimate projection merely because it was published later.
+   - For release cohorts **1966–1981**, retain the latest cumulative rentals-to-date figure available through the same cutoff. A later cumulative figure supersedes an earlier one. A figure explicitly limited to one reporting year is not cumulative and cannot be substituted. If a title does not reappear, retain its latest available cumulative figure and flag `no_later_update`.
+
+   The 1966 release-cohort boundary is fixed because the table published in January 1968 abandoned the anticipated-revenue column; using cumulative figures for the full 1966 cohort avoids mixing late-1966 titles reported only under the new method with projections for earlier releases. Do not add figures unless the source explicitly defines them as incremental components. Never incorporate a later rerelease.
 5. Exclude explicit rereleases, deduplicate title/run records, and rank descending by the retained amount. Preserve non-narrative and otherwise content-ineligible original releases in `cohort_rank`; apply content eligibility only after that rank is fixed. Where only a printed ordering is available, preserve that ordering and mark the amount unavailable.
 6. Preserve the table, issue, page, and exact cell/row provenance for every retained value.
 
@@ -135,7 +143,7 @@ Compare the primary and audit source through raw rank 35, normalized by stable t
 1. **Diagnose definitions first.** A difference caused by rentals versus gross, reporting year versus release year, source-native territory, cumulative horizon, or rerelease aggregation is a definitional difference, not a transcription error.
 2. **Primary source governs selection.** Correct it only for a publisher erratum or a demonstrable transcription/OCR error verified against the page image. Record the correction and evidence.
 3. **Boundary conflicts receive heightened review.** Flag any disagreement affecting cohort ranks 10/11 or 25/26, or an already-drawn pilot rank. Retain the primary-source sample, and preregister the alternate-source membership as a sensitivity analysis where feasible.
-4. **Exact ties preserve the publisher's order** unless the publisher explicitly declares a tie. If an explicit tie includes a drawn pilot rank, treat all tied rows as one unresolved rank block and apply a public-seed hash tie-break based only on stable title identifier; record the full tied set. If a tie crosses the main-study rank-10 boundary, retain the full tie set and report that the year contains more than 10 co-ranked films.
+4. **Exact ties use only information available before theme retrieval.** When all equal retained amounts come from one table, preserve that table's printed order unless the publisher explicitly declares a tie. When equal rounded amounts span different annual tables, no common publisher order exists: treat the full equal-amount block as `cross_table_amount_tie` and order it by ascending SHA-256 of `public_seed|cohort_year|stable_title_id`. Use the public seed in `docs/PILOT_DRAW.md`; prefer AFI, then the primary ranking database's title identifier, and otherwise a normalized U.S. title/director/release-date identifier. Record the complete tied set and its hashes. The same hash rule applies to a publisher-declared tie that contains a drawn pilot rank. If any exact tie crosses the future main-study rank-10 boundary, retain the full tie set in the boundary sensitivity analysis even when a deterministic order is stored.
 5. **Near ties are not ties.** Preserve source order but flag adjacent amounts differing by less than 1% as `rank_near_tie`, because rounding or later corrections could reverse them.
 6. **Unresolved cases remain unresolved.** Do not invent a release year or amount. For the pilot, advance through that slot's recorded `rank_replacement_order` only after the unresolved status and evidence are logged. For the main study, report the missing/adjudication case and perform a membership sensitivity analysis.
 
