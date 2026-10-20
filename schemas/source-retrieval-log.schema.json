@@ -1,0 +1,623 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/billewood/popular-film-values-study/schemas/source-retrieval-log.schema.json",
+  "title": "Source Candidate and Query Log",
+  "description": "Strict metadata-only log for neutral source queries and every screened candidate for one film.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "protocol_version",
+    "retrieval_log_id",
+    "archive_access_manifest_id",
+    "film_id",
+    "film_title",
+    "film_director",
+    "alternate_titles",
+    "identity_disambiguation_flags",
+    "release_date_anchor",
+    "created_at_utc",
+    "queries",
+    "candidates",
+    "duplicate_checks"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.1"},
+    "protocol_version": {"const": "0.1"},
+    "retrieval_log_id": {"$ref": "#/$defs/id"},
+    "archive_access_manifest_id": {"$ref": "#/$defs/id"},
+    "film_id": {"$ref": "#/$defs/id"},
+    "film_title": {"type": "string", "minLength": 1, "maxLength": 500},
+    "film_director": {"type": "string", "minLength": 1, "maxLength": 300},
+    "alternate_titles": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1, "maxLength": 500}
+    },
+    "identity_disambiguation_flags": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "short_title",
+          "common_dictionary_title",
+          "known_remake_or_same_title",
+          "franchise_installment"
+        ]
+      }
+    },
+    "release_date_anchor": {"$ref": "#/$defs/releaseDateAnchor"},
+    "created_at_utc": {"type": "string", "format": "date-time"},
+    "queries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/query"}
+    },
+    "candidates": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/candidate"}
+    },
+    "duplicate_checks": {
+      "description": "One pairwise record for every pair of candidates whose complete text was acquired.",
+      "type": "array",
+      "items": {"$ref": "#/$defs/duplicateCheck"}
+    },
+    "notes": {"type": "string", "maxLength": 2000}
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+    },
+    "slot": {
+      "enum": ["C_TRADE", "C_GENERAL", "R_LATER", "S_ACADEMIC", "P_SYNOPSIS", "R_LATER_2"]
+    },
+    "accessRoute": {
+      "enum": [
+        "open_api",
+        "open_web",
+        "licensed_database",
+        "publisher_archive",
+        "provider_workbench",
+        "library_download",
+        "physical_or_microfilm",
+        "interlibrary_loan",
+        "manual_browser",
+        "other_authorized"
+      ]
+    },
+    "releaseDateAnchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "date",
+        "resolution_rule",
+        "supporting_source_ids",
+        "conflicting_dates",
+        "notes"
+      ],
+      "properties": {
+        "date": {"type": "string", "format": "date"},
+        "resolution_rule": {
+          "enum": [
+            "afi_catalog",
+            "film_index_international",
+            "distributor_record_plus_contemporary_trade",
+            "two_concordant_authoritative_records"
+          ]
+        },
+        "supporting_source_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "conflicting_dates": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/conflictingReleaseDate"}
+        },
+        "notes": {"type": "string", "maxLength": 1000}
+      }
+    },
+    "conflictingReleaseDate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["date", "source_id", "resolution_note"],
+      "properties": {
+        "date": {"type": "string", "format": "date"},
+        "source_id": {"$ref": "#/$defs/id"},
+        "resolution_note": {"type": "string", "minLength": 1, "maxLength": 1000}
+      }
+    },
+    "filter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "value"],
+      "properties": {
+        "name": {
+          "enum": ["publication_date", "outlet", "language", "document_type", "full_text", "peer_reviewed"]
+        },
+        "value": {"type": "string", "maxLength": 500}
+      }
+    },
+    "queryComponents": {
+      "description": "Typed, theme-neutral components from which the provider-specific exact query is constructed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title_variant",
+        "title_value",
+        "director_value",
+        "release_year",
+        "medium_terms",
+        "document_terms",
+        "site_domain",
+        "field_scopes",
+        "ocr_relaxation_reason"
+      ],
+      "properties": {
+        "title_variant": {"enum": ["release_title", "alternate_title", "ocr_relaxed_title"]},
+        "title_value": {"type": "string", "minLength": 1, "maxLength": 500},
+        "director_value": {"type": ["string", "null"], "maxLength": 300},
+        "release_year": {"type": ["integer", "null"], "minimum": 1888, "maximum": 2100},
+        "medium_terms": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"enum": ["film", "movie", "cinema", "motion picture"]}
+        },
+        "document_terms": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"enum": ["review", "criticism", "essay", "analysis", "synopsis"]}
+        },
+        "site_domain": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9.-]+$", "maxLength": 253},
+        "field_scopes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"enum": ["title", "abstract", "subject", "full_text"]}
+        },
+        "ocr_relaxation_reason": {"type": ["string", "null"], "maxLength": 500}
+      }
+    },
+    "candidateRank": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_id", "rank"],
+      "properties": {
+        "candidate_id": {"$ref": "#/$defs/id"},
+        "rank": {"type": "integer", "minimum": 1}
+      }
+    },
+    "query": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "query_id",
+        "film_id",
+        "slot",
+        "hierarchy_step_id",
+        "query_sequence",
+        "resource_id",
+        "resource_or_outlet",
+        "access_route",
+        "query_template_id",
+        "query_components",
+        "exact_query",
+        "filters",
+        "sort_order",
+        "query_timestamp_utc",
+        "unfiltered_result_count_reported",
+        "result_count_reported",
+        "results_screened",
+        "screening_cap",
+        "candidate_ids_and_ranks",
+        "stop_reason"
+      ],
+      "properties": {
+        "query_id": {"$ref": "#/$defs/id"},
+        "film_id": {"$ref": "#/$defs/id"},
+        "slot": {"$ref": "#/$defs/slot"},
+        "hierarchy_step_id": {"$ref": "#/$defs/id"},
+        "query_sequence": {"type": "integer", "minimum": 1},
+        "resource_id": {"$ref": "#/$defs/id"},
+        "resource_or_outlet": {"type": "string", "minLength": 1, "maxLength": 200},
+        "access_route": {"$ref": "#/$defs/accessRoute"},
+        "query_template_id": {
+          "enum": [
+            "title_only",
+            "title_director",
+            "title_medium_document",
+            "alternate_title_only",
+            "alternate_title_director",
+            "alternate_title_medium_document",
+            "scholarship_title_director",
+            "scholarship_title_medium",
+            "scholarship_alternate_director",
+            "scholarship_alternate_medium",
+            "synopsis_title",
+            "synopsis_title_director",
+            "synopsis_alternate_title",
+            "ocr_relaxed_title_director"
+          ]
+        },
+        "query_components": {"$ref": "#/$defs/queryComponents"},
+        "exact_query": {"type": "string", "minLength": 1, "maxLength": 500},
+        "filters": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/filter"}
+        },
+        "sort_order": {
+          "enum": [
+            "provider_default_order",
+            "provider_relevance_then_publication_date",
+            "publication_date_ascending",
+            "publication_date_descending",
+            "protocol_tier_then_publication_date",
+            "scholarly_form_priority_then_publication_date",
+            "protocol_hierarchy"
+          ]
+        },
+        "query_timestamp_utc": {"type": "string", "format": "date-time"},
+        "unfiltered_result_count_reported": {"type": ["integer", "null"], "minimum": 0},
+        "result_count_reported": {"type": ["integer", "null"], "minimum": 0},
+        "results_screened": {"type": "integer", "minimum": 0, "maximum": 50},
+        "screening_cap": {"enum": [20, 50]},
+        "candidate_ids_and_ranks": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/candidateRank"}
+        },
+        "stop_reason": {
+          "enum": [
+            "eligible_candidate_found",
+            "resource_exhausted",
+            "screening_cap_reached",
+            "no_results",
+            "access_blocked",
+            "completed_without_eligible_candidate"
+          ]
+        }
+      }
+    },
+    "processingPermission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "environment_id",
+        "basis_type",
+        "basis_summary",
+        "rights_reference_ids",
+        "verified_at_utc"
+      ],
+      "properties": {
+        "status": {"enum": ["allowed", "not_allowed", "unresolved"]},
+        "environment_id": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"},
+        "basis_type": {
+          "enum": [
+            "public_domain_status",
+            "open_license",
+            "publisher_terms",
+            "subscription_license",
+            "tdm_authorization",
+            "written_permission",
+            "unresolved"
+          ]
+        },
+        "basis_summary": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "rights_reference_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "verified_at_utc": {"type": "string", "format": "date-time"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "allowed"}}, "required": ["status"]},
+          "then": {"properties": {"environment_id": {"type": "string"}}},
+          "else": {"properties": {"environment_id": {"type": "null"}}}
+        }
+      ]
+    },
+    "translationReference": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["citation", "public_url", "verified_at_utc"],
+      "properties": {
+        "citation": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "public_url": {"type": ["string", "null"], "format": "uri", "maxLength": 2000},
+        "verified_at_utc": {"type": "string", "format": "date-time"}
+      }
+    },
+    "shortContemporaryReviewException": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": [
+        "provider_labels_item_as_review",
+        "complete_editorial_item_verified",
+        "declared_before_theme_extraction",
+        "documentation"
+      ],
+      "properties": {
+        "provider_labels_item_as_review": {"const": true},
+        "complete_editorial_item_verified": {"const": true},
+        "declared_before_theme_extraction": {"const": true},
+        "documentation": {"type": "string", "minLength": 1, "maxLength": 1000}
+      }
+    },
+    "duplicateCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id_a",
+        "candidate_id_b",
+        "method",
+        "estimated_jaccard",
+        "hash_match",
+        "provenance_flags",
+        "classification",
+        "lineage_disposition",
+        "adjudication_note",
+        "checked_at_utc"
+      ],
+      "properties": {
+        "candidate_id_a": {"$ref": "#/$defs/id"},
+        "candidate_id_b": {"$ref": "#/$defs/id"},
+        "method": {"const": "token_5_shingle_minhash"},
+        "estimated_jaccard": {"type": "number", "minimum": 0, "maximum": 1},
+        "hash_match": {"enum": ["none", "raw", "normalized", "both"]},
+        "provenance_flags": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "shared_byline",
+              "wire_or_syndication_credit",
+              "explicit_republication",
+              "revised_version",
+              "translated_version",
+              "database_copy",
+              "common_embedded_synopsis"
+            ]
+          }
+        },
+        "classification": {
+          "enum": [
+            "exact_duplicate",
+            "near_duplicate_same_lineage",
+            "lineage_review_required",
+            "provenance_dependent",
+            "independent"
+          ]
+        },
+        "lineage_disposition": {"enum": ["same_lineage", "independent", "unresolved"]},
+        "adjudication_note": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "checked_at_utc": {"type": "string", "format": "date-time"}
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "film_id",
+        "sampled_film_identity_verified",
+        "slot",
+        "hierarchy_step_id",
+        "candidate_rank",
+        "selection_status",
+        "exclusion_reason",
+        "exclusion_detail_code",
+        "source_id",
+        "lineage_id",
+        "source_type",
+        "extraction_source_type",
+        "scholarly_form",
+        "contemporary_scholarship",
+        "commercial_curatorial",
+        "article_title",
+        "author_display",
+        "author_id",
+        "outlet",
+        "parent_company_at_publication",
+        "publication_date",
+        "publication_date_precision",
+        "date_window_status",
+        "publisher",
+        "language",
+        "original_language",
+        "language_basis",
+        "translation_reference",
+        "word_count_total",
+        "word_count_relevant",
+        "continuous_relevant_pages",
+        "contemporary_short_review_exception",
+        "doi_or_isbn",
+        "citation_page_start",
+        "database_name",
+        "database_document_id",
+        "canonical_url",
+        "permalink_or_archive_locator",
+        "query_id",
+        "result_rank",
+        "access_route",
+        "accessed_at_utc",
+        "acquisition_status",
+        "source_completeness_verified",
+        "rights_class",
+        "processing_permission",
+        "retention_deadline",
+        "raw_sha256",
+        "normalized_text_sha256",
+        "ocr_engine_version",
+        "page_or_paragraph_locators",
+        "lineage_notes"
+      ],
+      "properties": {
+        "candidate_id": {"$ref": "#/$defs/id"},
+        "film_id": {"$ref": "#/$defs/id"},
+        "sampled_film_identity_verified": {"type": "boolean"},
+        "slot": {"$ref": "#/$defs/slot"},
+        "hierarchy_step_id": {"$ref": "#/$defs/id"},
+        "candidate_rank": {"type": "integer", "minimum": 1},
+        "selection_status": {"enum": ["selected", "eligible_not_selected", "excluded", "pending"]},
+        "exclusion_reason": {
+          "type": ["string", "null"],
+          "enum": [
+            null,
+            "not_about_sampled_film",
+            "wrong_document_type",
+            "outside_date_window",
+            "incomplete_text",
+            "insufficient_length",
+            "missing_authorship_or_date",
+            "duplicate_or_dependent",
+            "no_processing_rights",
+            "access_failure",
+            "ocr_unusable",
+            "eligibility_ambiguous",
+            "other_predefined"
+          ]
+        },
+        "exclusion_detail_code": {
+          "type": ["string", "null"],
+          "enum": [
+            null,
+            "promotional_or_studio_authored",
+            "anonymous_capsule_or_rating_only",
+            "audience_or_social_content",
+            "unsupported_audio_without_transcript",
+            "personal_or_fan_site",
+            "snippet_abstract_or_preview_only",
+            "plot_only_outside_synopsis_slot",
+            "ai_generated_or_provenance_uncertain",
+            "wrong_release_remake_or_adaptation",
+            "interview_without_independent_analysis",
+            "untraceable_translation_or_repost",
+            "pirated_or_circumvented_copy"
+          ]
+        },
+        "source_id": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"},
+        "lineage_id": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"},
+        "source_type": {
+          "enum": [
+            "contemporary_trade_review",
+            "contemporary_general_review",
+            "later_essay",
+            "scholarly_analysis",
+            "detailed_synopsis",
+            "unknown"
+          ]
+        },
+        "extraction_source_type": {
+          "enum": [
+            "contemporary_review",
+            "retrospective_essay",
+            "scholarship",
+            "reference_synopsis",
+            "unknown"
+          ]
+        },
+        "scholarly_form": {
+          "type": ["string", "null"],
+          "enum": [
+            null,
+            "peer_reviewed_film_article",
+            "scholarly_book_chapter_film",
+            "peer_reviewed_comparative_article",
+            "scholarly_book_section",
+            "doctoral_dissertation_chapter"
+          ]
+        },
+        "contemporary_scholarship": {"type": "boolean"},
+        "commercial_curatorial": {"type": "boolean"},
+        "article_title": {"type": ["string", "null"], "minLength": 1, "maxLength": 500},
+        "author_display": {"type": ["string", "null"], "minLength": 1, "maxLength": 300},
+        "author_id": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"},
+        "outlet": {"type": ["string", "null"], "minLength": 1, "maxLength": 300},
+        "parent_company_at_publication": {"type": ["string", "null"], "maxLength": 300},
+        "publication_date": {
+          "type": ["string", "null"],
+          "pattern": "^(?:[0-9]{4}|[0-9]{4}-[0-9]{2}|[0-9]{4}-[0-9]{2}-[0-9]{2})$"
+        },
+        "publication_date_precision": {"enum": ["day", "month", "year", "unknown"]},
+        "date_window_status": {
+          "enum": ["eligible", "outside", "ambiguous", "unresolved", "not_applicable"]
+        },
+        "publisher": {"type": ["string", "null"], "minLength": 1, "maxLength": 300},
+        "language": {"type": ["string", "null"], "pattern": "^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$"},
+        "original_language": {"type": ["string", "null"], "pattern": "^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$"},
+        "language_basis": {
+          "enum": [
+            "original_english",
+            "authorized_published_english_translation",
+            "ineligible_non_english",
+            "unresolved"
+          ]
+        },
+        "translation_reference": {"$ref": "#/$defs/translationReference"},
+        "word_count_total": {"type": ["integer", "null"], "minimum": 0},
+        "word_count_relevant": {"type": ["integer", "null"], "minimum": 0},
+        "continuous_relevant_pages": {"type": ["integer", "null"], "minimum": 0},
+        "contemporary_short_review_exception": {
+          "$ref": "#/$defs/shortContemporaryReviewException"
+        },
+        "doi_or_isbn": {"type": ["string", "null"], "maxLength": 300},
+        "citation_page_start": {"type": ["string", "null"], "maxLength": 50},
+        "database_name": {"type": ["string", "null"], "maxLength": 300},
+        "database_document_id": {"type": ["string", "null"], "maxLength": 500},
+        "canonical_url": {"type": ["string", "null"], "format": "uri", "maxLength": 2000},
+        "permalink_or_archive_locator": {"type": ["string", "null"], "maxLength": 2000},
+        "query_id": {"$ref": "#/$defs/id"},
+        "result_rank": {"type": "integer", "minimum": 1},
+        "access_route": {"$ref": "#/$defs/accessRoute"},
+        "accessed_at_utc": {"type": "string", "format": "date-time"},
+        "acquisition_status": {
+          "enum": [
+            "complete_source_authorized",
+            "provider_workbench_only",
+            "metadata_only",
+            "incomplete",
+            "inaccessible"
+          ]
+        },
+        "source_completeness_verified": {"type": "boolean"},
+        "rights_class": {
+          "enum": [
+            "public_domain_verified",
+            "open_license_verified",
+            "publisher_public_terms_reviewed",
+            "subscription_personal_research",
+            "subscription_tdm_authorized",
+            "permission_granted",
+            "rights_unknown"
+          ]
+        },
+        "processing_permission": {"$ref": "#/$defs/processingPermission"},
+        "retention_deadline": {"type": ["string", "null"], "format": "date"},
+        "raw_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+        "normalized_text_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+        "ocr_engine_version": {"type": ["string", "null"], "maxLength": 200},
+        "page_or_paragraph_locators": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {"type": "string", "minLength": 1, "maxLength": 500}
+        },
+        "lineage_notes": {"type": "string", "maxLength": 1000}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"selection_status": {"const": "excluded"}}, "required": ["selection_status"]},
+          "then": {"properties": {"exclusion_reason": {"type": "string"}}},
+          "else": {"properties": {"exclusion_reason": {"type": "null"}}}
+        },
+        {
+          "if": {"properties": {"exclusion_reason": {"const": "other_predefined"}}, "required": ["exclusion_reason"]},
+          "then": {"properties": {"exclusion_detail_code": {"type": "string"}}},
+          "else": {"properties": {"exclusion_detail_code": {"type": "null"}}}
+        }
+      ]
+    }
+  }
+}

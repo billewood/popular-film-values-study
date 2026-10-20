@@ -1,0 +1,23 @@
+{
+  "schema_version": "0.1",
+  "protocol_version": "0.1",
+  "bundle_id": "bundle-template-film",
+  "film_id": "film-template-example",
+  "retrieval_log_id": "retrieval-template-film",
+  "archive_access_manifest_id": "manifest-template-example",
+  "extraction_environment_id": "environment-template-local",
+  "frozen_at_utc": "2026-10-19T13:00:00Z",
+  "completion_status": "target_complete",
+  "academic_search_disposition": "source_selected",
+  "scholarship_substitution": false,
+  "slot_assignments": {
+    "C_TRADE": "candidate-template-c-trade",
+    "C_GENERAL": "candidate-template-c-general",
+    "R_LATER": "candidate-template-r-later",
+    "S_ACADEMIC": "candidate-template-s-academic",
+    "P_SYNOPSIS": "candidate-template-p-synopsis",
+    "R_LATER_2": null
+  },
+  "unfilled_canonical_slots": [],
+  "notes": "Synthetic lockfile example; replace every identifier before a real frozen run."
+}

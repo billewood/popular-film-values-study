@@ -1,0 +1,365 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/billewood/popular-film-values-study/schemas/archive-access-manifest.schema.json",
+  "title": "Archive Access Manifest",
+  "description": "Credential-free metadata describing which discovery and full-text routes are available for a frozen retrieval run.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "protocol_version",
+    "manifest_id",
+    "frozen_at_utc",
+    "extraction_environments",
+    "resources",
+    "source_system_inventory",
+    "search_hierarchy"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.1"},
+    "protocol_version": {"const": "0.1"},
+    "manifest_id": {"$ref": "#/$defs/id"},
+    "frozen_at_utc": {"type": "string", "format": "date-time"},
+    "extraction_environments": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/extractionEnvironment"}
+    },
+    "resources": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/resource"}
+    },
+    "source_system_inventory": {
+      "description": "Complete disposition inventory for every canonical slot/system pair in the frozen retrieval hierarchy. It records documented date/issue holdings separately from whether the project can lawfully access them.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/sourceSystemInventoryEntry"}
+    },
+    "search_hierarchy": {
+      "description": "Frozen slot/system/access-route order for routes with documented usable coverage. Every available earlier route must be completed before a later route can supply a selected source; unavailable and no-coverage systems remain explicit in source_system_inventory.",
+      "type": "array",
+      "items": {"$ref": "#/$defs/hierarchyStep"}
+    },
+    "notes": {"type": "string", "maxLength": 2000}
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+    },
+    "slot": {
+      "enum": ["C_TRADE", "C_GENERAL", "R_LATER", "S_ACADEMIC", "P_SYNOPSIS", "R_LATER_2"]
+    },
+    "sourceSystemCode": {
+      "enum": [
+        "variety", "hollywood_reporter", "boxoffice", "motion_picture_daily", "film_daily",
+        "new_york_times", "los_angeles_times", "washington_post", "chicago_tribune",
+        "christian_science_monitor", "time", "newsweek", "first_engagement_city_daily",
+        "bfi_sight_and_sound", "film_at_lincoln_center_film_comment", "museum_of_modern_art",
+        "library_of_congress", "academy", "american_film_institute", "new_yorker",
+        "chicago_reader_or_rogerebert", "criterion_current", "other_commissioned_edition",
+        "fiaf", "film_and_television_literature_index", "jstor", "project_muse",
+        "crossref_openalex_unpaywall", "mla_international_bibliography",
+        "worldcat_and_local_catalog", "google_scholar", "afi_catalog",
+        "film_index_international", "bfi_or_national_film_institute",
+        "accountable_film_reference", "scholarly_film_encyclopedia"
+      ]
+    },
+    "coverageInterval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "coverage_interval_id",
+        "date_dimension",
+        "start_date",
+        "end_date",
+        "start_issue",
+        "end_issue",
+        "resource_id",
+        "evidence_basis",
+        "evidence_note",
+        "documentation_url",
+        "checked_at"
+      ],
+      "properties": {
+        "coverage_interval_id": {"$ref": "#/$defs/id"},
+        "date_dimension": {"enum": ["source_publication_or_issue_date", "film_release_date"]},
+        "start_date": {"type": "string", "format": "date"},
+        "end_date": {"type": "string", "format": "date"},
+        "start_issue": {"type": ["string", "null"], "minLength": 1, "maxLength": 200},
+        "end_issue": {"type": ["string", "null"], "minLength": 1, "maxLength": 200},
+        "resource_id": {"$ref": "#/$defs/id"},
+        "evidence_basis": {
+          "enum": [
+            "provider_coverage_statement",
+            "licensed_database_title_list",
+            "issue_level_inventory",
+            "catalog_scope_statement",
+            "manual_holdings_verification",
+            "other_documented"
+          ]
+        },
+        "evidence_note": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "documentation_url": {"type": ["string", "null"], "format": "uri", "maxLength": 2000},
+        "checked_at": {"type": "string", "format": "date"}
+      }
+    },
+    "sourceSystemInventoryEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inventory_entry_id",
+        "slot",
+        "source_system_code",
+        "source_system_name",
+        "system_tier",
+        "system_rank",
+        "access_disposition",
+        "coverage_disposition",
+        "assessed_resource_ids",
+        "coverage_intervals",
+        "disposition_reason",
+        "checked_at"
+      ],
+      "properties": {
+        "inventory_entry_id": {"$ref": "#/$defs/id"},
+        "slot": {"$ref": "#/$defs/slot"},
+        "source_system_code": {"$ref": "#/$defs/sourceSystemCode"},
+        "source_system_name": {"type": "string", "minLength": 1, "maxLength": 300},
+        "system_tier": {"type": "integer", "minimum": 1},
+        "system_rank": {"type": "integer", "minimum": 1},
+        "access_disposition": {"enum": ["available", "pending", "unavailable"]},
+        "coverage_disposition": {"enum": ["documented_intervals", "no_coverage", "not_verified"]},
+        "assessed_resource_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "coverage_intervals": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/coverageInterval"}
+        },
+        "disposition_reason": {"type": ["string", "null"], "minLength": 1, "maxLength": 1000},
+        "checked_at": {"type": "string", "format": "date"},
+        "notes": {"type": "string", "maxLength": 1000}
+      }
+    },
+    "rightsReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rights_reference_id",
+        "reference_type",
+        "citation",
+        "public_url",
+        "reviewed_at"
+      ],
+      "properties": {
+        "rights_reference_id": {"$ref": "#/$defs/id"},
+        "reference_type": {
+          "enum": [
+            "item_rights_statement",
+            "public_domain_statement",
+            "open_license",
+            "provider_terms",
+            "subscription_license",
+            "tdm_authorization",
+            "written_permission",
+            "institutional_license_review"
+          ]
+        },
+        "citation": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "public_url": {"type": ["string", "null"], "format": "uri", "maxLength": 2000},
+        "reviewed_at": {"type": "string", "format": "date"}
+      }
+    },
+    "hierarchyStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hierarchy_step_id",
+        "slot",
+        "source_system_code",
+        "source_system_id",
+        "source_system_name",
+        "system_tier",
+        "system_rank",
+        "route_rank",
+        "resource_id"
+      ],
+      "properties": {
+        "hierarchy_step_id": {"$ref": "#/$defs/id"},
+        "slot": {"$ref": "#/$defs/slot"},
+        "source_system_code": {"$ref": "#/$defs/sourceSystemCode"},
+        "source_system_id": {"$ref": "#/$defs/id"},
+        "source_system_name": {"type": "string", "minLength": 1, "maxLength": 300},
+        "system_tier": {"type": "integer", "minimum": 1},
+        "system_rank": {"type": "integer", "minimum": 1},
+        "route_rank": {"type": "integer", "minimum": 1},
+        "resource_id": {"$ref": "#/$defs/id"}
+      }
+    },
+    "extractionEnvironment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "environment_id",
+        "label",
+        "host_type",
+        "model_host",
+        "processing_location",
+        "provider_retention",
+        "provider_training",
+        "human_review"
+      ],
+      "properties": {
+        "environment_id": {"$ref": "#/$defs/id"},
+        "label": {"type": "string", "minLength": 1, "maxLength": 200},
+        "host_type": {
+          "enum": [
+            "local_offline",
+            "institutional_compute",
+            "provider_workbench",
+            "approved_hosted_service"
+          ]
+        },
+        "model_host": {"type": "string", "minLength": 1, "maxLength": 200},
+        "processing_location": {"type": "string", "minLength": 1, "maxLength": 200},
+        "provider_retention": {
+          "enum": [
+            "local_only",
+            "zero_retention",
+            "contractually_limited",
+            "not_applicable"
+          ]
+        },
+        "provider_training": {"enum": ["disabled", "not_applicable"]},
+        "human_review": {
+          "enum": ["disabled", "contractually_restricted", "not_applicable"]
+        },
+        "notes": {"type": "string", "maxLength": 1000}
+      }
+    },
+    "resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resource_id",
+        "resource_name",
+        "supported_slots",
+        "access_status",
+        "access_mode",
+        "authentication_mode",
+        "authorized_user_scope",
+        "authorized_principal",
+        "discovery_automation",
+        "full_text_acquisition",
+        "tdm_permission",
+        "model_processing_permission",
+        "allowed_environment_ids",
+        "storage_permission",
+        "export_permission",
+        "license_basis",
+        "license_reviewed_at",
+        "documentation_urls",
+        "rights_references"
+      ],
+      "properties": {
+        "resource_id": {"$ref": "#/$defs/id"},
+        "resource_name": {"type": "string", "minLength": 1, "maxLength": 200},
+        "supported_slots": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/slot"}
+        },
+        "access_status": {"enum": ["available", "pending", "unavailable"]},
+        "access_mode": {
+          "enum": [
+            "open",
+            "licensed_subscription",
+            "personal_subscription",
+            "on_site_physical",
+            "written_permission"
+          ]
+        },
+        "authentication_mode": {
+          "description": "Records the kind of authentication only; never store a key, password, cookie, or token here.",
+          "enum": [
+            "none",
+            "api_key",
+            "subscription_login",
+            "institutional_sso",
+            "on_site_access",
+            "other_authorized"
+          ]
+        },
+        "authorized_user_scope": {
+          "enum": ["public", "named_researcher", "institutional_users", "project_team", "on_site_users"]
+        },
+        "authorized_principal": {
+          "description": "Person, project role, institution, or 'Public'; never put credentials here.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "discovery_automation": {
+          "enum": ["supported_api", "licensed_export", "manual_only", "not_available"]
+        },
+        "full_text_acquisition": {
+          "enum": [
+            "open_download",
+            "licensed_download",
+            "provider_workbench",
+            "manual_authorized",
+            "physical_scan_authorized",
+            "metadata_only",
+            "not_available"
+          ]
+        },
+        "tdm_permission": {"enum": ["allowed", "restricted", "prohibited", "unknown"]},
+        "model_processing_permission": {
+          "enum": ["allowed", "restricted", "prohibited", "unknown"]
+        },
+        "allowed_environment_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "storage_permission": {
+          "enum": [
+            "authorized_restricted_store",
+            "provider_workbench_only",
+            "metadata_and_hash_only",
+            "public_redistribution_allowed",
+            "none",
+            "unknown"
+          ]
+        },
+        "export_permission": {
+          "enum": ["metadata_only", "derived_data_only", "reviewed_excerpts", "full_source_allowed", "none", "unknown"]
+        },
+        "license_basis": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "license_reviewed_at": {"type": "string", "format": "date"},
+        "retention_deadline": {"type": ["string", "null"], "format": "date"},
+        "documentation_urls": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "format": "uri", "maxLength": 2000}
+        },
+        "rights_references": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/rightsReference"}
+        },
+        "notes": {"type": "string", "maxLength": 1000}
+      }
+    }
+  }
+}

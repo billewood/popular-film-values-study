@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/billewood/popular-film-values-study/schemas/frozen-source-bundle.schema.json",
+  "title": "Frozen Source Bundle",
+  "description": "Metadata-only lockfile assigning selected candidate records to the five canonical source slots and the conditional R_LATER_2 substitute.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "protocol_version",
+    "bundle_id",
+    "film_id",
+    "retrieval_log_id",
+    "archive_access_manifest_id",
+    "extraction_environment_id",
+    "frozen_at_utc",
+    "completion_status",
+    "academic_search_disposition",
+    "scholarship_substitution",
+    "slot_assignments",
+    "unfilled_canonical_slots"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.1"},
+    "protocol_version": {"const": "0.1"},
+    "bundle_id": {"$ref": "#/$defs/id"},
+    "film_id": {"$ref": "#/$defs/id"},
+    "retrieval_log_id": {"$ref": "#/$defs/id"},
+    "archive_access_manifest_id": {"$ref": "#/$defs/id"},
+    "extraction_environment_id": {"$ref": "#/$defs/id"},
+    "frozen_at_utc": {"type": "string", "format": "date-time"},
+    "completion_status": {"enum": ["target_complete", "minimum_complete", "ineligible"]},
+    "academic_search_disposition": {
+      "enum": ["source_selected", "exhausted_no_eligible_source", "not_complete"]
+    },
+    "scholarship_substitution": {"type": "boolean"},
+    "slot_assignments": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["C_TRADE", "C_GENERAL", "R_LATER", "S_ACADEMIC", "P_SYNOPSIS", "R_LATER_2"],
+      "properties": {
+        "C_TRADE": {"$ref": "#/$defs/nullableId"},
+        "C_GENERAL": {"$ref": "#/$defs/nullableId"},
+        "R_LATER": {"$ref": "#/$defs/nullableId"},
+        "S_ACADEMIC": {"$ref": "#/$defs/nullableId"},
+        "P_SYNOPSIS": {"$ref": "#/$defs/nullableId"},
+        "R_LATER_2": {"$ref": "#/$defs/nullableId"}
+      }
+    },
+    "unfilled_canonical_slots": {
+      "description": "Canonical slots with null assignments. S_ACADEMIC remains listed when R_LATER_2 lawfully substitutes for it.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"enum": ["C_TRADE", "C_GENERAL", "R_LATER", "S_ACADEMIC", "P_SYNOPSIS"]}
+    },
+    "notes": {"type": "string", "maxLength": 2000}
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+    },
+    "nullableId": {
+      "type": ["string", "null"],
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+    }
+  }
+}
