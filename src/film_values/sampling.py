@@ -236,6 +236,53 @@ def read_candidates_csv(path: str | Path) -> list[FilmCandidate]:
         ]
 
 
+def read_slots_csv(path: str | Path) -> list[PilotSlot]:
+    with Path(path).open(newline="", encoding="utf-8") as handle:
+        rows = csv.DictReader(handle)
+        required = {
+            "period_start",
+            "period_end",
+            "assignment",
+            "release_year",
+            "selected_rank",
+            "rank_replacement_order",
+        }
+        missing = required - set(rows.fieldnames or ())
+        if missing:
+            raise ValueError(f"Slot CSV is missing columns: {sorted(missing)}")
+        slots: list[PilotSlot] = []
+        for row in rows:
+            replacement_order = tuple(
+                int(rank) for rank in row["rank_replacement_order"].split(";") if rank
+            )
+            selected_rank = int(row["selected_rank"])
+            if not replacement_order or replacement_order[0] != selected_rank:
+                raise ValueError(
+                    "rank_replacement_order must begin with selected_rank"
+                )
+            if len(replacement_order) != len(set(replacement_order)):
+                raise ValueError("rank_replacement_order may not contain duplicates")
+            if set(replacement_order) != set(range(11, 26)):
+                raise ValueError("rank_replacement_order must contain ranks 11 through 25")
+            period = (int(row["period_start"]), int(row["period_end"]))
+            if period not in PILOT_PERIODS:
+                raise ValueError(f"Unknown pilot period: {period}")
+            release_year = int(row["release_year"])
+            if not period[0] <= release_year <= period[1]:
+                raise ValueError("release_year must fall within its pilot period")
+            slots.append(
+                PilotSlot(
+                    period_start=period[0],
+                    period_end=period[1],
+                    assignment=row["assignment"],
+                    release_year=release_year,
+                    selected_rank=selected_rank,
+                    rank_replacement_order=replacement_order,
+                )
+            )
+        return slots
+
+
 def write_selections_csv(
     path: str | Path,
     selections: Sequence[PilotSelection],
