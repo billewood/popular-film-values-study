@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/billewood/popular-film-values-study/schemas/source-metadata.schema.json",
+  "title": "Interpretive Source Metadata",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source_id",
+    "film_id",
+    "source_type",
+    "title",
+    "author_or_institution",
+    "publisher",
+    "publication_date",
+    "source_url",
+    "access_date",
+    "lineage_id",
+    "retrieval_query_id",
+    "full_text_sha256",
+    "included",
+    "exclusion_reason"
+  ],
+  "properties": {
+    "source_id": {"type": "string", "minLength": 1},
+    "film_id": {"type": "string", "minLength": 1},
+    "source_type": {
+      "enum": [
+        "contemporary_review",
+        "retrospective_essay",
+        "scholarship",
+        "reference_synopsis"
+      ]
+    },
+    "title": {"type": "string", "minLength": 1},
+    "author_or_institution": {"type": "string", "minLength": 1},
+    "publisher": {"type": "string", "minLength": 1},
+    "publication_date": {"type": "string", "format": "date"},
+    "source_url": {"type": "string", "format": "uri"},
+    "archive_url": {"type": ["string", "null"], "format": "uri"},
+    "access_date": {"type": "string", "format": "date"},
+    "lineage_id": {"type": "string", "minLength": 1},
+    "retrieval_query_id": {"type": "string", "minLength": 1},
+    "full_text_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "included": {"type": "boolean"},
+    "exclusion_reason": {"type": "string"},
+    "scholarship_substituted": {"type": "boolean", "default": false},
+    "notes": {"type": "string"}
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/billewood/popular-film-values-study/schemas/film-candidate.schema.json",
+  "title": "Film Candidate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "film_id",
+    "title",
+    "release_year",
+    "annual_rank",
+    "popularity_source_id",
+    "source_url",
+    "eligible",
+    "exclusion_reason"
+  ],
+  "properties": {
+    "film_id": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1},
+    "release_year": {"type": "integer", "minimum": 1950, "maximum": 2025},
+    "annual_rank": {"type": "integer", "minimum": 1},
+    "popularity_source_id": {"type": "string", "minLength": 1},
+    "source_url": {"type": "string", "format": "uri"},
+    "eligible": {"type": "boolean"},
+    "exclusion_reason": {"type": "string"}
+  }
+}
