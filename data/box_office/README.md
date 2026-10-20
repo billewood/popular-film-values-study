@@ -1,6 +1,6 @@
-# Pilot box-office frames (1982–2024 selected years)
+# Pilot box-office frames
 
-This directory contains metadata-only ranking work for the 12 modern-regime years selected by the frozen pilot draw. No reviews, criticism, synopses, or other thematic sources were opened.
+This directory contains metadata-only ranking work for the years selected by the frozen pilot draw. The modern-regime frames are resolved; the historical work is an explicitly provisional checkpoint described in `HISTORICAL_README.md`. No reviews, criticism, synopses, or other thematic sources were opened.
 
 ## Files
 
@@ -10,6 +10,7 @@ This directory contains metadata-only ranking work for the 12 modern-regime year
 - `source_access_log.csv`: one primary and one audit access record per year, plus the three primary title-metadata checks used for exclusions.
 - `source_revalidation_log.csv`: a later metadata-only access check with byte counts and SHA-256 fingerprints of all 27 live responses; raw HTML was not redistributed.
 - `live_frame_revalidation.csv`: a later live comparison confirming that title, source-row position, and amount still exactly matched all 420 stored primary rows.
+- `HISTORICAL_README.md`: status, files, evidence boundaries, and unresolved work for the pre-1982 frames.
 
 ## Ranking rules applied
 

@@ -149,7 +149,7 @@ Compare the primary and audit source through raw rank 35, normalized by stable t
 
 ## Reproducible freeze rule
 
-The metadata-only pilot draw has already been executed from a public seed without titles. Complete and freeze all 18 required selected and backup-year frames, plus the structured failure record for 1960, **before** any review, synopsis, or theme material is retrieved. Complete the remaining 1950–2025 frames before resolving the future main-sample titles. The freeze package must contain:
+The metadata-only pilot draw has already been executed from a public seed without titles. The slot table now contains 19 records: 18 required selected or backup-year frames (with 1952 replacing the failed 1960 backup) plus the retained structured failure record for 1960. Complete and freeze all 18 required frames **before** any review, synopsis, or theme material is retrieved. Complete the remaining 1950–2025 frames before resolving the future main-sample titles. The freeze package must contain:
 
 * protocol version and freeze date;
 * every raw source row needed to recover ranks through at least 35;

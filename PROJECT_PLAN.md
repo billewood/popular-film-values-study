@@ -2,7 +2,7 @@
 
 **Initial record:** 2026-10-19
 
-**Current phase:** Pilot title resolution; no interpretive sources or theme data have been collected in this repository.
+**Current phase:** Pilot sampling-frame reconstruction and pre-extraction controls; no interpretive sources or theme data have been collected in this repository.
 
 ## Research objective
 
@@ -124,3 +124,11 @@ The detailed retrieval protocol requires a four-source minimum consisting of bot
 ### 2026-10-19 — Pre-extraction implementation audit corrections
 
 Mutation testing found that critic-preference and reception records could raise film-theme centrality, a designated synopsis could cast a stance vote, Unicode compatibility folding could make a nonverbatim string pass the quotation check, and verification-result constraints were not identical in code and schema. The implementation now excludes critic and reception claims from film-content scores, prevents synopsis stance votes while retaining factual presence and sequence evidence, uses canonical rather than compatibility Unicode normalization, and enforces consistent verification decisions. Historical pilot amount types and unconstructible slot status are now executable validator rules. These are corrections to make the implementation conform to the already written estimand; no source corpus, thematic output, or validation result had been accessed.
+
+### 2026-10-19 — Modern-frame revalidation and disclosed artifact gap
+
+The 12 modern-regime frames were re-fetched after their derived rows had been committed. Response byte counts and SHA-256 fingerprints were recorded, and all 420 stored primary rows exactly matched the live title, source-row position, and amount. This supports the transcription but does not recreate the original responses, which were not retained. The modern frames therefore remain explicitly short of a complete source-artifact freeze. No membership changed, and no interpretive source or theme output had been accessed.
+
+### 2026-10-19 — Provisional historical-frame checkpoint
+
+Ranking-only reconstruction produced a structurally complete provisional 1959 frame, but it is not frozen because content eligibility, secondary-audit fields, source-artifact completeness, and final adjudication remain outstanding. The cohort-specific 1952 audit found a unique rank-12 title, *With a Song in My Heart*, while leaving the lower top-35 boundary open pending one commercial-premiere adjudication. The 1960 failure remains unconstructible, and the 1962, 1965, 1966, and 1968 frames remain incomplete. Citations, page locators, access times, and temporary-artifact hashes are recorded without committing scans. This checkpoint does not authorize historical title resolution or interpretive-source retrieval.

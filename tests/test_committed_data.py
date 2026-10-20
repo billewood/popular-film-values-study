@@ -6,7 +6,12 @@ import unittest
 from collections import Counter
 from pathlib import Path
 
-from film_values.rankings import audit_frames, read_ranking_csv, resolve_pilot_titles
+from film_values.rankings import (
+    PILOT_HISTORICAL_AMOUNT_TYPE,
+    audit_frames,
+    read_ranking_csv,
+    resolve_pilot_titles,
+)
 from film_values.sampling import read_slots_csv
 
 
@@ -92,6 +97,97 @@ class CommittedModernFrameTests(unittest.TestCase):
         self.assertEqual(sum(int(row["matched_rows"]) for row in checks), len(self.rows))
         self.assertTrue(all(int(row["mismatched_rows"]) == 0 for row in checks))
         self.assertTrue(all(row["result"] == "exact_match" for row in checks))
+
+
+class CommittedHistoricalCheckpointTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.historical_slots = {
+            slot.release_year: slot
+            for slot in read_slots_csv(ROOT / "data" / "pilot_slots.csv")
+            if slot.release_year < 1982
+        }
+        with (BOX_OFFICE / "historical_frame_status.csv").open(
+            newline="", encoding="utf-8"
+        ) as handle:
+            cls.status_rows = {
+                int(row["cohort_year"]): row for row in csv.DictReader(handle)
+            }
+
+    def test_status_table_matches_every_historical_slot(self) -> None:
+        self.assertEqual(set(self.status_rows), set(self.historical_slots))
+        for year, row in self.status_rows.items():
+            slot = self.historical_slots[year]
+            self.assertEqual(int(row["selected_rank"]), slot.selected_rank)
+            self.assertEqual(
+                tuple(int(rank) for rank in row["rank_replacement_order"].split(";")),
+                slot.rank_replacement_order,
+            )
+            self.assertEqual(row["assignment"], slot.assignment)
+            self.assertEqual(row["amount_rule"], PILOT_HISTORICAL_AMOUNT_TYPE[year])
+
+    def test_checkpoint_does_not_overstate_historical_freeze(self) -> None:
+        self.assertEqual(self.status_rows[1960]["frame_status"], "blocked")
+        self.assertEqual(self.historical_slots[1960].frame_status, "unconstructible")
+        self.assertEqual(self.status_rows[1959]["top35_rows_frozen"], "false")
+        self.assertIn("not frozen", self.status_rows[1959]["blocker_detail"].lower())
+        for year in (1962, 1965, 1966, 1968):
+            self.assertNotEqual(self.status_rows[year]["fully_reconstructible"], "true")
+
+    def test_1959_reconstruction_is_structurally_complete_but_unresolved(self) -> None:
+        rows = read_ranking_csv(BOX_OFFICE / "pilot_rankings_1959_provisional.csv")
+        audits = audit_frames(rows, required_years={1959})
+        self.assertEqual(len(rows), 36)
+        self.assertEqual(len(audits), 1)
+        self.assertTrue(audits[0].complete, audits[0])
+        self.assertTrue(all(row.eligibility == "unresolved" for row in rows))
+        self.assertTrue(all(row.source_amount_type == "cumulative_to_date" for row in rows))
+
+    def test_1952_selected_rank_is_invariant_while_boundary_is_open(self) -> None:
+        with (BOX_OFFICE / "historical_1952_projection_audit.csv").open(
+            newline="", encoding="utf-8"
+        ) as handle:
+            rows = list(csv.DictReader(handle))
+        selected = [row for row in rows if row["selected_rank_12_match"] == "true"]
+        self.assertEqual(len(selected), 1)
+        self.assertEqual(selected[0]["title"], "With a Song in My Heart")
+        self.assertEqual(selected[0]["latest_projected_amount"], "3250000")
+        self.assertEqual(
+            (selected[0]["provisional_rank_low"], selected[0]["provisional_rank_high"]),
+            ("12", "12"),
+        )
+        by_title = {row["title"]: row for row in rows}
+        self.assertEqual(
+            (
+                by_title["Because You're Mine"]["provisional_rank_low"],
+                by_title["Because You're Mine"]["provisional_rank_high"],
+            ),
+            ("34", "35"),
+        )
+        for title in ("Lone Star", "She's Working Her Way Through College"):
+            self.assertEqual(
+                (
+                    by_title[title]["provisional_rank_low"],
+                    by_title[title]["provisional_rank_high"],
+                ),
+                ("35", "37"),
+            )
+
+    def test_post_cutoff_spartacus_amount_has_explicit_provenance(self) -> None:
+        with (BOX_OFFICE / "historical_source_access_log.csv").open(
+            newline="", encoding="utf-8"
+        ) as handle:
+            rows = list(csv.DictReader(handle))
+        matching = [
+            row
+            for row in rows
+            if row["issue_date"] == "1963-01-09"
+            and "1960" in row["cohort_years"].split(";")
+            and "Spartacus" in row["notes"]
+        ]
+        self.assertEqual(len(matching), 1)
+        self.assertRegex(matching[0]["artifact_sha256"], re.compile(r"^[a-f0-9]{64}$"))
+        self.assertIn("outside", matching[0]["notes"].lower())
 
 
 if __name__ == "__main__":
