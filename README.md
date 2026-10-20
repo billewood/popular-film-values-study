@@ -20,6 +20,7 @@ No study participant will watch films and assign thematic codes. Scores will be 
 - [docs/PILOT_DRAW.md](docs/PILOT_DRAW.md): deterministic year/rank sampling procedure and public seed.
 - [docs/BOX_OFFICE_SAMPLING.md](docs/BOX_OFFICE_SAMPLING.md): frozen ranking sources, cohort construction, and title-resolution rules.
 - [docs/SOURCE_RETRIEVAL.md](docs/SOURCE_RETRIEVAL.md): frozen source-bundle, neutral-search, rights, and deduplication rules.
+- [docs/PILOT_SUCCESS_CRITERIA.md](docs/PILOT_SUCCESS_CRITERIA.md): a priori mechanical, repeatability, and decision gates.
 
 ## Reproducibility
 

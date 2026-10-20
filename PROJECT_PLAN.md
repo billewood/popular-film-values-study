@@ -32,11 +32,11 @@ The following are frozen in the linked implementation documents:
 3. Film and source replacement rules: `docs/PILOT_DRAW.md` and `docs/SOURCE_RETRIEVAL.md`.
 4. Text normalization and duplicate thresholds: `docs/SOURCE_RETRIEVAL.md`; remaining implementation work is tracked as a milestone rather than an open design choice.
 5. Copyright, license, storage, and model-processing gates: `docs/SOURCE_RETRIEVAL.md`.
+6. Mechanical-validity, machine-repeatability, sensitivity, and go/revise/stop criteria: `docs/PILOT_SUCCESS_CRITERIA.md`.
 
 The following remain open and must be frozen before development-film theme extraction:
 
 1. The language-model provider, exact model/version, decoding settings, and prompts.
-2. Machine-agreement and stability thresholds required for a successful pilot.
 
 These decisions will be committed before the relevant development-film data are processed. They may be informed by logistical testing, but not by whether they produce a preferred substantive pattern.
 

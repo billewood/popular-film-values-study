@@ -166,6 +166,8 @@ Primary historical analyses, if the method passes validation, will report main-b
 
 Only the six development films may be used to refine retrieval instructions, prompts, labels, and aggregation code. After those revisions, the complete pipeline is versioned and frozen before processing the six validation films.
 
+Numeric mechanical-validity and repeatability gates are frozen separately in `docs/PILOT_SUCCESS_CRITERIA.md`. They exclude shared no-evidence cells from positive-agreement metrics and cannot be retuned after theme extraction begins.
+
 The validation report will include:
 
 - eligible-source coverage and substitutions by historical period;
