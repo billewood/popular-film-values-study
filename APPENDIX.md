@@ -12,8 +12,8 @@ This appendix supplies the operational rules omitted from the short Methods sect
 
 The study produces two related but distinct kinds of evidence:
 
-1. **Source-attributed content claims:** statements that a source makes about what a film depicts, prioritizes, endorses, criticizes, rewards, or punishes.
-2. **Reception claims:** a critic's or scholar's own evaluation or interpretation of the film.
+1. **Source-attributed film claims:** statements or interpretations that a source advances about what a film depicts, prioritizes, endorses, criticizes, rewards, or punishes.
+2. **Reception or preference claims:** a critic's personal quality judgment or liking, or a claim about how audiences or other critics received the film, rather than an attribution of thematic content or stance to the film itself.
 
 These will not be silently combined. Results will be described as published interpretations or source-attributed content. They will not be described as population-wide audience opinion. A source's failure to mention a theme is `not discussed`, not evidence that the theme is absent.
 
@@ -43,7 +43,7 @@ The target bundle contains five independent sources per film:
 3. one peer-reviewed article, scholarly book or chapter, or comparable academic analysis; and
 4. one detailed reference synopsis from an accountable film institution or established reference work.
 
-If no scholarly source is available under the frozen search procedure, a second retrospective professional or institutional essay may be substituted. The substitution is a recorded source-coverage variable. The synopsis may establish actions, sequencing, and outcomes but receives no vote on narrative stance unless it explicitly advances an interpretation.
+If no scholarly source is available under the frozen search procedure, a second retrospective professional or institutional essay may be substituted. The substitution is a recorded source-coverage variable. The designated synopsis may establish actions, sequencing, and outcomes but never votes on narrative stance. A publication that advances an eligible interpretation must occupy an interpretive slot to cast such a vote; the same document cannot fill both roles.
 
 Retrieval queries may contain only the film title, release year, director, and neutral document terms such as `review`, `criticism`, or `analysis`. They may not contain any of the 15 theme names or theoretically loaded synonyms. Databases, outlet hierarchy, search dates, result ordering, and the number of results screened will be logged before full-text extraction.
 
@@ -68,9 +68,10 @@ The extraction model receives one archived source at a time. It may not browse, 
 ```text
 film_id
 source_id
+lineage_id
 source_type
 exact_evidence_span
-page_paragraph_or_url_locator
+locator
 claim_target
 claim_type
 theme
@@ -79,13 +80,18 @@ source_salience
 source_stance
 ending_response
 explicit_temporal_contrast
+claim_dependence
+attributed_source_ids
+attribution_span
 ```
 
 Allowed `claim_target` values are film, character, filmmaker, critic, audience, and society. Allowed `claim_type` values are plot fact, film-theme attribution, film-stance attribution, plot consequence, critic preference, and reception claim.
 
 Plot facts or consequences about the film or its characters and claims explicitly attributing a theme or stance to the film may contribute to film-theme centrality. Critic-preference and reception claims remain auditable records but never enter film-theme centrality or stance. Only film-attributed stance claims and explicit plot consequences from interpretive sources may contribute to stance; the designated synopsis never casts a directional stance vote. Plot description may support presence or sequencing but cannot by itself establish endorsement.
 
-`narrative_segment` is `main_body`, `ending`, or `global_unspecified`. Main-body and ending labels require explicit temporal evidence. Global claims will not be forced into a segment. References to a finale, final act, climax, resolution, final outcome, comeuppance, renunciation, redemption, atonement, or culminating sacrifice may support an ending classification when the surrounding passage confirms that use.
+`claim_dependence` is `independent_interpretation` when the publication's author advances the claim as their own and `attributed_derivative` when the passage merely quotes, paraphrases, or reports another selected source. A derivative record must name the selected source identifier and preserve a verbatim attribution span inside its evidence span. It remains in the audit archive but contributes no independent presence, salience, stance, ending, or corroboration vote. Merely citing the same work does not make an otherwise independently stated analysis derivative.
+
+`narrative_segment` is `main_body`, `ending`, or `global_unspecified`. Main-body and ending labels require explicit temporal evidence. Global claims will not be forced into a segment. They are scored and reported as a separate descriptive stratum, never imputed to main-body or ending, and excluded from the primary main-body measure and `glamorize_then_punish` flag. References to a finale, final act, climax, resolution, final outcome, comeuppance, renunciation, redemption, atonement, or culminating sacrifice may support an ending classification when the surrounding passage confirms that use.
 
 The pipeline follows a no-quotation-no-code rule. Evidence strings must match the archived source exactly after only predefined normalization of whitespace and typographic punctuation. A separate model pass receives the proposed record and quoted context and may affirm or reject it but may not invent replacement evidence. Disagreements remain unresolved unless a frozen third evidence-constrained pass selects a supported option. Model confidence scores are not evidence.
 
@@ -134,12 +140,12 @@ For each film, theme, and segment, source-attributed centrality is:
 
 - **0 — not evidenced:** no eligible source evidence in the fixed corpus;
 - **1 — singly evidenced:** at least one source-level 1, but the criteria below are unmet;
-- **2 — corroborated/important:** at least one source-level 3 or at least two independent source-level 2 classifications; or
+- **2 — important or singly central:** at least one source-level 3 or at least two independent source-level 2 classifications; or
 - **3 — consensus-central:** at least two independent source-level 3 classifications.
 
 Every score will be accompanied by its number of supporting sources. Level 0 is always labeled `not evidenced`, never `absent`.
 
-For stance, let `n+` and `n−` be the numbers of independent directional source votes. Film-level stance is affirmative or critical only when at least two directional sources exist and at least two thirds agree. Otherwise it is mixed/contested or unresolved, with those states retained separately. The underlying vote counts are always preserved.
+For stance, let `n+` and `n−` be the numbers of independent directional source votes. First, film-level stance is affirmative or critical when at least two directional sources exist and at least two thirds agree in that direction. If neither directional threshold is met, it is `mixed/contested` when at least one source explicitly votes mixed or when both affirmative and critical votes occur; otherwise it is `unresolved`. The underlying vote counts are always preserved.
 
 Contemporary-review results and retrospective/scholarly results will first be calculated separately. Agreement permits a clearly labeled combined summary; disagreement is reported as historically differentiated interpretation rather than averaged away. Films, not individual sources, are the independent units in later historical analyses.
 

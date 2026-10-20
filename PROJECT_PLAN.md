@@ -34,11 +34,14 @@ The following are frozen in the linked implementation documents:
 5. Copyright, license, storage, and model-processing gates: `docs/SOURCE_RETRIEVAL.md`.
 6. Mechanical-validity, machine-repeatability, sensitivity, and go/revise/stop criteria: `docs/PILOT_SUCCESS_CRITERIA.md`.
 
-The following remain open and must be frozen before development-film theme extraction:
+The following implementation choices remain open:
 
-1. The language-model provider, exact model/version, decoding settings, and prompts.
+1. The model provider and processing/hosting environment must be frozen before interpretive-source retrieval so that item rights can be evaluated against the environment that will actually receive the text.
+2. The exact model/version, decoding settings, extraction prompt, and verifier prompt must be frozen before development-film theme extraction.
 
-These decisions will be committed before the relevant development-film data are processed. They may be informed by logistical testing, but not by whether they produce a preferred substantive pattern.
+These decisions will be committed before their respective boundaries. They may be informed by content-free logistical testing, but not by whether they produce a preferred substantive pattern.
+
+Separate operational prerequisites also remain. Before interpretive-source retrieval begins, all 18 required pilot ranking frames must be frozen, the modern source-artifact gap must be resolved or governed by a dated amendment, and the access/rights manifest must identify the actual processing environment. Before theme extraction begins, each selected film's lawfully acquired source bundle and metadata manifest, source hashes or permitted archival references, extraction prompt, verifier prompt, model configuration, and executable analysis version must be frozen. A tested orchestration adapter must derive each film's selected-source universe and the pilot validation manifest directly from those frozen bundle and retrieval records; production extraction may not rely on caller-supplied source identities or manifest digests. Only the public manifest is metadata-only; eligible complete text remains in its permitted environment. These are incomplete implementation milestones, not unrecorded discretion to alter the estimand.
 
 ## Ordered milestones
 
@@ -131,4 +134,16 @@ The 12 modern-regime frames were re-fetched after their derived rows had been co
 
 ### 2026-10-19 — Provisional historical-frame checkpoint
 
-Ranking-only reconstruction produced a structurally complete provisional 1959 frame, but it is not frozen because content eligibility, secondary-audit fields, source-artifact completeness, and final adjudication remain outstanding. The cohort-specific 1952 audit found a unique rank-12 title, *With a Song in My Heart*, while leaving the lower top-35 boundary open pending one commercial-premiere adjudication. The 1960 failure remains unconstructible, and the 1962, 1965, 1966, and 1968 frames remain incomplete. Citations, page locators, access times, and temporary-artifact hashes are recorded without committing scans. This checkpoint does not authorize historical title resolution or interpretive-source retrieval.
+Ranking-only reconstruction produced a structurally complete provisional 1959 frame, but it is not frozen because content eligibility, secondary-audit fields, source-artifact completeness, and final adjudication remain outstanding. The cohort-specific 1952 audit found a unique rank-12 title, *With a Song in My Heart*, while leaving the lower top-35 boundary open pending one commercial-premiere adjudication. The 1960 failure remains unconstructible, and the 1962, 1965, 1966, and 1968 frames remain incomplete. Citations, page locators, access times, and temporary-artifact hashes are recorded without committing scans. This checkpoint does not authorize a final historical title lock or interpretive-source retrieval.
+
+### 2026-10-19 — Cross-document terminology and readiness reconciliation
+
+A consistency audit aligned the short methods, appendix, retrieval protocol, success criteria, and sampling summary without changing the estimand or numeric thresholds. Five sources are now described consistently as the target and the exact four-source minimum is explicit. A designated synopsis never casts a stance vote; `mixed/contested`, `unresolved`, and `global_unspecified` now have explicit roles; centrality level 2 no longer carries the potentially misleading label "corroborated" when one source can produce it; and the `glamorize_then_punish` rule consistently requires an affirmative main-body profile plus a critical ending with a consequence. The plan now distinguishes open model and environment choices from the incomplete sampling, access, source-bundle, prompt, and artifact prerequisites, with their respective pre-retrieval and pre-extraction freeze points. No interpretive source or theme output had been accessed.
+
+### 2026-10-19 — Metadata-only retrieval-control hardening
+
+Adversarial mutation tests showed that a superficially complete bundle could otherwise omit routes, candidates, screening results, coverage systems, or rights dependencies while satisfying simpler count checks. Strict schemas, synthetic templates, and an executable audit now require a complete canonical slot/system inventory; neutral typed queries; full candidate accounting; deterministic selection and exhaustion; source-lineage, date, length, language, and substitution checks; and item-, storage-, export-, and environment-level permission records. These controls establish completeness and internal consistency of the recorded metadata, not the external truth of researcher-entered holdings or license claims. No real interpretive source, source text, or theme output was accessed to develop the controls.
+
+### 2026-10-19 — Claim dependence and executable decision-gate hardening
+
+The evidence contract now distinguishes a source author's independent interpretation from a claim explicitly attributed to another selected source. Derivative claims retain exact attribution evidence for audit but cast no presence, salience, stance, ending, or corroboration vote, preventing repeated authority from becoming false agreement. The pilot evaluator now requires the exact frozen roster of mechanical, source-, film-, control-, sensitivity-, and stability gates and recomputes component results from their retained inputs before it can return `proceed`. The low-level validators are implemented, while a bundle-to-extraction adapter that supplies their identities and manifests remains a declared pre-extraction milestone rather than an assumed trust step. No interpretive source, theme output, or validation result had been accessed.

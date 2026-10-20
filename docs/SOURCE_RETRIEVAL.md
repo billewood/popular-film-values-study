@@ -4,6 +4,8 @@
 
 **Frozen:** 2026-10-19
 
+**Last amended:** 2026-10-19; see `PROJECT_PLAN.md`
+
 **Study window:** films released from 1950 through 2025
 
 **Applies to:** pilot development and validation films; later use in the main study requires a dated confirmation that archive access and licenses have not changed
@@ -38,7 +40,7 @@ The target bundle for each film has five independent source lineages.
 | `S_ACADEMIC` | One scholarly article, book chapter, or equivalent substantial academic analysis | Published on or after first U.S. commercial release; items within 365 days are flagged `contemporary_scholarship` | Scholarship |
 | `P_SYNOPSIS` | One authoritative detailed synopsis | No publication-date restriction | Plot facts and sequence only |
 
-`P_SYNOPSIS` receives no vote on a film's stance unless the source itself explicitly makes an interpretation and independently qualifies for an interpretive slot. The same document cannot fill two slots.
+`P_SYNOPSIS` never votes on a film's stance. A publication that explicitly advances an eligible interpretation may instead be selected into an interpretive slot, in which case it cannot also fill `P_SYNOPSIS`; the same document cannot fill two slots.
 
 If no eligible `S_ACADEMIC` source exists after the complete scholarly search, a second independent retrospective source, `R_LATER_2`, replaces it. This is the only routine cross-slot substitution. It is recorded as `scholarship_substitution = true` and is never described as scholarly evidence.
 
@@ -67,7 +69,9 @@ Thus, the hard minimum is four sources and three independent interpretive lineag
 
 ## 3. Access preflight: what can actually be automated
 
-Before pilot films are searched, create a dated `archive_access_manifest` recording institutional subscriptions, personal subscriptions, API keys, text-and-data-mining permissions, export restrictions, and the person or institution authorized to use each resource. A resource marked unavailable in that manifest remains unavailable for the entire frozen run. Credentials and subscription tokens are never committed to the repository.
+Before pilot films are searched, create a dated `archive_access_manifest` recording institutional subscriptions, personal subscriptions, API keys, text-and-data-mining permissions, export restrictions, and the person or institution authorized to use each resource. Its `source_system_inventory` must give an explicit access and coverage disposition for every canonical slot/system pair in the frozen hierarchy; usable routes require dated or issue-aware coverage tied to a resource, while unavailable, unverified, and no-coverage systems require reasons. A resource marked unavailable in that manifest remains unavailable for the entire frozen run. Credentials and subscription tokens are never committed to the repository.
+
+The automated manifest audit checks that these recorded dispositions are complete, chronologically coherent, relevant to the film's search window, and consistent with the routes actually queried. It cannot establish that a researcher-entered holdings, rights, or license assertion is externally true; the cited evidence and governing terms must still be checked before the manifest is frozen.
 
 The following table distinguishes discovery from lawful full-text acquisition. “Automatable” means that the provider documents an API, bulk dataset, or licensed text-mining route; it does not authorize bypassing authentication, paywalls, rate limits, robots controls, or contract terms.
 

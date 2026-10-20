@@ -4,6 +4,8 @@
 
 **Frozen:** 2026-10-19, before development-film theme extraction
 
+**Last amended:** 2026-10-19; see `PROJECT_PLAN.md`
+
 ## Purpose and limit
 
 The pilot can establish that the procedure is auditable, mechanically valid, and reproducible enough for cautious descriptive use. With no human theme coders and no independent criterion measure, it cannot establish that model labels are a uniquely correct reading of a film. Passing therefore licenses claims about **source-attributed interpretations**, not unqualified claims about film content, audiences, or U.S. society.
@@ -20,7 +22,7 @@ Empty output is a legitimate result. Sources for which both replicates return no
 
 All of the following must pass:
 
-1. **Coverage:** one untouched validation film in every historical period meets the frozen four-source minimum, including both contemporary slots and an authoritative synopsis. Substitutions and film replacements remain visible.
+1. **Coverage:** one untouched validation film in every historical period meets the frozen four-source minimum, including both contemporary slots, an authoritative synopsis, and at least one later retrospective or scholarly source. Substitutions and film replacements remain visible.
 2. **Rights:** every processed source has a recorded permission basis compatible with the actual model environment. No credential, restricted full text, or unlicensed corpus is committed publicly.
 3. **Schema and provenance:** 100% of accepted records conform to the frozen schema and identify a frozen source, lineage, and locator.
 4. **Exact evidence:** 100% of accepted evidence spans match the archived source under the frozen normalization. A verifier may reject but never repair an unsupported record.
@@ -40,7 +42,7 @@ For each source, compare the replicate sets of accepted `(theme, narrative_segme
 - Among units found by both replicates, exact salience agreement and exact stance agreement must each be at least **0.80** overall.
 - No more than **20%** of the union of proposed source-level units may require the constrained third pass.
 
-Separately aggregate each replicate to film-level scores. Among film/theme/segment cells evidenced by either replicate, exact centrality agreement must be at least **0.80**. Direct polarity reversal is already a hard failure. The late-retribution indicator must agree for every film/theme flagged by either replicate; if neither replicate flags any case, that check is reported as not evaluable rather than passed.
+Separately aggregate each replicate to film-level scores. Among film/theme/segment cells evidenced by either replicate, exact centrality agreement must be at least **0.80**. Direct polarity reversal is already a hard failure. The `glamorize_then_punish` flag must agree for every film/theme flagged by either replicate; if neither replicate flags any case, that check is reported as not evaluable rather than passed.
 
 These cutoffs are operational tolerances chosen before theme data exist. They are not estimates of human agreement and will not be retuned to rescue validation results.
 
@@ -50,8 +52,8 @@ The following are reported but are not reduced to a single pass/fail number:
 
 - results by contemporary, retrospective, scholarly, and synopsis strata;
 - source disagreement and historically differentiated interpretation;
-- leave-one-source-out changes in centrality, stance, and late-retribution flags;
-- the percentage of corroborated or central cells that depend on one source;
+- leave-one-source-out changes in centrality, stance, and `glamorize_then_punish` flags;
+- the percentage of level-2 or level-3 centrality cells that depend on one source;
 - OCR, source-length, substitution, and access failures by period; and
 - both-empty rates and the distribution of source-level Jaccard scores.
 
