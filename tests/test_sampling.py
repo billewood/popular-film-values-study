@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import unittest
 
-from film_values.sampling import FilmCandidate, PILOT_PERIODS, draw_pilot
+from film_values.sampling import (
+    FilmCandidate,
+    PILOT_PERIODS,
+    draw_pilot,
+    draw_pilot_slots,
+)
 
 
 def candidates() -> list[FilmCandidate]:
@@ -24,6 +29,24 @@ def candidates() -> list[FilmCandidate]:
 
 
 class SamplingTests(unittest.TestCase):
+    def test_slot_draw_is_deterministic_and_uses_distinct_years(self) -> None:
+        first = draw_pilot_slots(seed="public-commit-hash")
+        second = draw_pilot_slots(seed="public-commit-hash")
+        self.assertEqual(first, second)
+        self.assertEqual(len(first), 18)
+        for period in PILOT_PERIODS:
+            selected = [
+                row for row in first if (row.period_start, row.period_end) == period
+            ]
+            self.assertEqual(
+                [row.assignment for row in selected],
+                ["development", "validation", "backup_1"],
+            )
+            self.assertEqual(len({row.release_year for row in selected}), 3)
+            for row in selected:
+                self.assertEqual(row.selected_rank, row.rank_replacement_order[0])
+                self.assertEqual(set(row.rank_replacement_order), set(range(11, 26)))
+
     def test_draw_is_deterministic_and_balanced(self) -> None:
         first = draw_pilot(candidates(), seed="protocol-v0.1")
         second = draw_pilot(reversed(candidates()), seed="protocol-v0.1")

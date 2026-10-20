@@ -50,6 +50,16 @@ class PilotSelection:
     selection_order: int
 
 
+@dataclass(frozen=True, slots=True)
+class PilotSlot:
+    period_start: int
+    period_end: int
+    assignment: str
+    release_year: int
+    selected_rank: int
+    rank_replacement_order: tuple[int, ...]
+
+
 def period_for_year(year: int) -> tuple[int, int]:
     for start, end in PILOT_PERIODS:
         if start <= year <= end:
@@ -60,6 +70,67 @@ def period_for_year(year: int) -> tuple[int, int]:
 def _selection_key(seed: str, candidate: FilmCandidate) -> bytes:
     payload = f"{seed}|{candidate.film_id}|{candidate.release_year}|{candidate.annual_rank}"
     return hashlib.sha256(payload.encode("utf-8")).digest()
+
+
+def _slot_key(seed: str, *parts: object) -> bytes:
+    payload = "|".join((seed, *(str(part) for part in parts)))
+    return hashlib.sha256(payload.encode("utf-8")).digest()
+
+
+def draw_pilot_slots(
+    *,
+    seed: str,
+    backups_per_period: int = 1,
+    allowed_ranks: range = range(11, 26),
+) -> list[PilotSlot]:
+    """Select years and annual ranks before retrieving any film titles.
+
+    The public seed fixes the year, initial rank, and within-year replacement
+    order for each development, validation, and backup slot. This two-stage
+    design avoids constructing a full 1,000-plus-film pilot frame while still
+    preventing thematic or source-availability-based title selection.
+    """
+
+    if not seed:
+        raise ValueError("seed may not be empty")
+    if backups_per_period < 0:
+        raise ValueError("backups_per_period may not be negative")
+    rank_values = tuple(allowed_ranks)
+    if not rank_values:
+        raise ValueError("allowed_ranks may not be empty")
+
+    assignments = ("development", "validation") + tuple(
+        f"backup_{index}" for index in range(1, backups_per_period + 1)
+    )
+    slots: list[PilotSlot] = []
+    for start, end in PILOT_PERIODS:
+        years = sorted(
+            range(start, end + 1),
+            key=lambda year: (_slot_key(seed, "year", start, end, year), year),
+        )
+        if len(years) < len(assignments):
+            raise ValueError(f"Period {start}-{end} has too few years for requested slots")
+        for assignment, year in zip(assignments, years, strict=False):
+            rank_order = tuple(
+                sorted(
+                    rank_values,
+                    key=lambda rank: (
+                        _slot_key(seed, "rank", start, end, assignment, year, rank),
+                        rank,
+                    ),
+                )
+            )
+            slots.append(
+                PilotSlot(
+                    period_start=start,
+                    period_end=end,
+                    assignment=assignment,
+                    release_year=year,
+                    selected_rank=rank_order[0],
+                    rank_replacement_order=rank_order,
+                )
+            )
+    return slots
 
 
 def draw_pilot(
@@ -182,7 +253,7 @@ def write_selections_csv(
         "selection_order",
     )
     with Path(path).open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fields)
+        writer = csv.DictWriter(handle, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         for selection in selections:
             film = selection.film
@@ -198,5 +269,32 @@ def write_selections_csv(
                     "period_end": selection.period_end,
                     "assignment": selection.assignment,
                     "selection_order": selection.selection_order,
+                }
+            )
+
+
+def write_slots_csv(path: str | Path, slots: Sequence[PilotSlot]) -> None:
+    fields = (
+        "period_start",
+        "period_end",
+        "assignment",
+        "release_year",
+        "selected_rank",
+        "rank_replacement_order",
+    )
+    with Path(path).open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields, lineterminator="\n")
+        writer.writeheader()
+        for slot in slots:
+            writer.writerow(
+                {
+                    "period_start": slot.period_start,
+                    "period_end": slot.period_end,
+                    "assignment": slot.assignment,
+                    "release_year": slot.release_year,
+                    "selected_rank": slot.selected_rank,
+                    "rank_replacement_order": ";".join(
+                        str(rank) for rank in slot.rank_replacement_order
+                    ),
                 }
             )
