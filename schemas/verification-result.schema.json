@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/billewood/popular-film-values-study/schemas/verification-result.schema.json",
+  "title": "Evidence Verification Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["accepted", "reason_codes", "explanation"],
+  "properties": {
+    "accepted": {"type": "boolean"},
+    "reason_codes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "accepted",
+          "theme_unsupported",
+          "claim_target_incorrect",
+          "claim_type_incorrect",
+          "segment_inferred",
+          "salience_overstated",
+          "stance_unsupported",
+          "critic_preference_misclassified",
+          "ending_response_unsupported",
+          "selfishness_guardrail_failed",
+          "consumerism_guardrail_failed",
+          "insufficient_context",
+          "other"
+        ]
+      }
+    },
+    "explanation": {"type": "string", "minLength": 1}
+  }
+}

@@ -21,6 +21,7 @@ from .models import (
     SourceType,
     Theme,
 )
+from .serialization import evidence_record_from_dict, evidence_record_to_dict
 
 __all__ = [
     "ClaimTarget",
@@ -38,6 +39,8 @@ __all__ = [
     "aggregate_film_theme",
     "collapse_source_records",
     "evidence_span_matches",
+    "evidence_record_from_dict",
+    "evidence_record_to_dict",
     "glamorize_then_punish",
     "not_evidenced_score",
     "normalize_evidence_text",
