@@ -1,8 +1,10 @@
 # Pilot Methods Appendix
 
-**Protocol version:** 0.1
+**Protocol version:** 0.2
 
 **Established:** 2026-10-19
+
+**Last amended:** 2026-10-19; see `PROJECT_PLAN.md`
 
 This appendix supplies the operational rules omitted from the short Methods section. Any conflict is resolved in favor of this appendix unless a later dated amendment explicitly says otherwise.
 
@@ -30,13 +32,13 @@ Two eligible films will be sampled from each period from positions 11–25 in an
 
 Eligible works are fictional or dramatized narrative feature films. Documentaries, concert films, filmed performances, and rereleases are excluded because the instrument assumes narrative agents, goals, and outcomes. Sequels are eligible, but sources must discuss the sampled film rather than relying on the franchise generally.
 
-The historical box-office source hierarchy and reconciliation procedure must be frozen before the film draw. Rankings will be based on within-year position; monetary values from different eras will not be treated as directly comparable.
+The historical box-office source hierarchy and reconciliation procedure must be frozen before film identities are resolved from the metadata-only year/rank draw. Rankings will be based on within-year position; monetary values from different eras will not be treated as directly comparable.
 
 ## C. Source bundle and retrieval
 
 The target bundle contains five independent sources per film:
 
-1. two professional reviews published within 12 months of the first United States commercial release;
+1. two professional reviews published from 30 days before through 365 days after the first United States commercial release;
 2. one later professional, curatorial, or institutional essay;
 3. one peer-reviewed article, scholarly book or chapter, or comparable academic analysis; and
 4. one detailed reference synopsis from an accountable film institution or established reference work.

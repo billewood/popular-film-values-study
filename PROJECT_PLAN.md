@@ -2,7 +2,7 @@
 
 **Initial record:** 2026-10-19
 
-**Current phase:** Protocol development; pilot data not yet collected in this repository.
+**Current phase:** Pilot title resolution; no interpretive sources or theme data have been collected in this repository.
 
 ## Research objective
 
@@ -23,15 +23,20 @@ Describe how the motivational and moral themes attributed to highly popular film
 - The pilot will test the method, not the historical hypothesis.
 - Pilot films and scores will not be reused in the main historical analysis.
 
-## Open decisions that must be frozen before pilot sampling
+## Protocol decisions and remaining freezes
 
-1. Historical box-office source hierarchy and rules for reconciling conflicting ranks.
-2. Exact databases, archives, and outlet order used for source retrieval.
-3. Replacement rules for inaccessible films or insufficient source coverage.
-4. The language-model provider, exact model/version, decoding settings, and prompts.
-5. Text-normalization and near-duplicate-detection procedures.
-6. Machine-agreement and stability thresholds required for a successful pilot.
-7. Storage rules for copyrighted source text; shareable outputs may contain metadata, lawful short excerpts, and hashes rather than full text.
+The following are frozen in the linked implementation documents:
+
+1. Historical box-office source hierarchy and rank reconciliation: `docs/BOX_OFFICE_SAMPLING.md`.
+2. Databases, archives, outlet order, neutral searches, and source eligibility: `docs/SOURCE_RETRIEVAL.md`.
+3. Film and source replacement rules: `docs/PILOT_DRAW.md` and `docs/SOURCE_RETRIEVAL.md`.
+4. Text normalization and duplicate thresholds: `docs/SOURCE_RETRIEVAL.md`; remaining implementation work is tracked as a milestone rather than an open design choice.
+5. Copyright, license, storage, and model-processing gates: `docs/SOURCE_RETRIEVAL.md`.
+
+The following remain open and must be frozen before development-film theme extraction:
+
+1. The language-model provider, exact model/version, decoding settings, and prompts.
+2. Machine-agreement and stability thresholds required for a successful pilot.
 
 These decisions will be committed before the relevant development-film data are processed. They may be informed by logistical testing, but not by whether they produce a preferred substantive pattern.
 
@@ -85,3 +90,9 @@ This repository is a prospective record, not an immutable registration. Every su
 - whether previously processed films or sources became development material.
 
 No force-pushes or history rewrites are planned. A later formal registration may archive a specific commit and its cryptographic identifier in an immutable research registry.
+
+## Amendment log
+
+### 2026-10-19 — Metadata-only draw precedes title resolution
+
+Version 0.1 said the historical ranking hierarchy would be frozen before the film draw. In practice, the public-seed procedure first froze only year/rank coordinates, with no titles attached. The ranking hierarchy was then frozen before those coordinates were resolved to film identities. This preserves the intended blindness to titles, themes, source availability, and likely findings while making the two-stage procedure explicit. At the time of this amendment, no sampled title, interpretive source, or theme output had been retrieved for the pilot.
